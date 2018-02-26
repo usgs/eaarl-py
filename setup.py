@@ -7,15 +7,11 @@ requirements = [
     'scipy',
 ]
 
-test_requirements = [
-    'pytest',
-]
-
 setup(
     name='eaarl',
     version='0.0.1',
     description='EAARL processing library',
-    packages=find_packages('eaarl'),
+    packages=find_packages(include=['eaarl.*']),
     package_dir={'eaarl': 'eaarl'},
     install_requires=requirements,
     classifiers=[
@@ -29,6 +25,6 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Topic :: Scientific/Engineering :: GIS',
     ],
-    test_suite='tests',
-    tests_requires=test_requirements
+    setup_requires=['pytest-runner'],
+    tests_require=['pytest'],
 )
