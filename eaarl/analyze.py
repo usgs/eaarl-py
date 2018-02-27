@@ -98,10 +98,10 @@ def centroid(wf, limit=None):
             Any sequence of numbers suitable as input to np.array, representing
             the sample values for the digitized waveform.
     '''
-    if not wf:
-        return -1
-
     wf = np.array(wf)
+
+    if wf.size == 0:
+        return -1
 
     if limit:
         wf = wf[:limit]
