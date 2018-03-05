@@ -47,8 +47,11 @@ third-party libraries are required:
 
 The following third-party libraries are optional but recommended:
 
-- `Shapely <https://github.com/Toblerity/Shapely>`_ (optional)
-- `tqdm <https://getihub.com/tqdm/tqdm>`_ (optional)
+- `Shapely <https://github.com/Toblerity/Shapely>`_; only required if you want
+  to use :meth:`eaarl.io.flight.Flight.wfs_by_region` or
+  to use :meth:`eaarl.io.flight.Flight.times_by_region`.
+- `tqdm <https://getihub.com/tqdm/tqdm>`_; if installed, a progress bar will be
+  displayed when loading rasters; this is purely cosmetic.
 
 
 Installation
@@ -74,6 +77,14 @@ subdirectory and run this command::
     $ make html
 
 The documentation will be generated under docs/_build/html.
+
+
+Tests
+-----
+
+The library comes with a test suite that can be run using this command::
+
+    $ python setup.py test
 
 
 License
