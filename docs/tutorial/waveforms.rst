@@ -55,7 +55,7 @@ If you like, you can also similarly visualize the transmit waveform::
 .. image:: waveforms/plot_tx116_bg.png
 
 The library contains some basic methods for waveform analysis and derivation of
-a point cloud. The basic workflow looks like this::
+a point cloud. The basic workflow for EAARL-B looks like this::
 
     >>> import eaarl.analyze
     >>> frame = eaarl.analyze.remove_failed_thresh(frame)
@@ -83,6 +83,24 @@ Finally, *add_fs* add the fields *fs_pos*, *fs_range*, *fs_x*, *fs_y*, and
 *fs_z*. These represent the position in the return waveform of the surface
 centroid, the range in meters between the scan mirror and the detected target,
 and the x,y,z, location of the target in UTM coordinates.
+
+If you are working with EAARL-A data, then an additional step is required. In
+the EAARL-A system, all three channels represent the same point. They each
+receive a different amount of the return energy, allowing for a greater range
+of sensitivity. You need to select the first non-saturated return for each
+pulse using *select_eaarla_channel*. The revised workflow looks like this::
+
+    >>> import eaarl.analyze
+    >>> frame = eaarl.analyze.remove_failed_thresh(frame)
+    >>> frame = eaarl.analyze.select_eaarla_channel(frame)
+    >>> frame = eaarl.analyze.add_mirror(frame, flight.ops)
+    >>> frame = eaarl.analyze.add_fs(frame, flight.ops)
+
+If you prefer to keep all three EAARL-A channels available or would like to
+create your own algorithm for selecting which channel to use, then you should
+manually remove channel 4 which contains noise::
+
+    >>> frame = frame[frame.channel != 4]
 
 Here's an example that plots the detected surfaces in matplotlib for a frame
 that contains a single raster::

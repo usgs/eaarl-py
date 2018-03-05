@@ -39,6 +39,63 @@ def remove_failed_thresh(frame, rx=True, tx=True):
         frame = frame[frame.thresh_tx == 0]
     return frame
 
+def select_eaarla_channel(frame, max_saturated=5, max_samples=12, saturation_value=250):
+    '''Returns a frame with the optimal channel for each EAARL-A raster.
+
+    The EAARL-A system collected three channels for each laser pulse. Channel 1
+    received 90% of the return energy, channel 2 received 9% of the return
+    energy, and channel 3 received 1% of the return energy. This permits a
+    greater overall range of sensitivity: if the first channel is saturated,
+    you can use the second; if the second is saturated, you can use the third.
+    (Channel 4 is unused on the EAARL-A system and contains noise, so it is
+    never used.)
+
+    This function picks the first non-saturated channel for each pulse.
+
+    Parameters
+        frame : pandas.DataFrame
+            DataFrame of raster data to extract from. Must contain fields
+            channel, raster_number, pulse_number, and rx. Must be sorted by
+            raster_number, then pulse_number, then channel.
+        max_saturated : int
+            Maximum number of samples that may be saturated. Default is 5.
+        max_samples : int
+            Maximum number of samples at the head of the waveform to check.
+            Defaults to 12.
+        saturation_value : int
+            Saturation value threshold. If a sample is greater than or equal to
+            this, it is saturated. Default is 250.
+
+    Returns : pandas.DataFrame
+        New pandas.DataFrame with kept records.
+    '''
+    # Get rid of channel 4; in EAARL-A, it's noise
+    frame = frame[frame.channel != 4]
+
+    # Sanity test on sorting; not perfect, but should catch accidents
+    if not np.all(frame.channel[0::3] == 1):
+        raise ValueError('frame is not sorted properly')
+    if not np.all(frame.channel[1::3] == 2):
+        raise ValueError('frame is not sorted properly')
+    if not np.all(frame.channel[2::3] == 3):
+        raise ValueError('frame is not sorted properly')
+    if not np.all(frame.raster_number.values[1:] >= frame.raster_number.values[:-1]):
+        raise ValueError('frame is not sorted properly')
+
+    # Determine which waveforms are saturated
+    check_saturation = np.vectorize(
+        lambda rx: (rx[:max_samples] >= saturation_value).sum() >= max_saturated,
+        otypes=[bool])
+    saturated = check_saturation(frame.rx)
+
+    # Use the first non-saturated waveform for each; fallback to the third if
+    # all are saturated
+    keep = np.logical_not(saturated)
+    keep[1::3] = np.logical_and(np.logical_not(keep[0::3]), keep[1::3])
+    keep[2::3] = np.logical_and(np.logical_not(keep[0::3]), np.logical_not(keep[1::3]))
+
+    return frame[keep]
+
 def add_mirror(frame, ops):
     '''Adds the mirror location to the records
 
