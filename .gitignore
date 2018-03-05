@@ -1,8 +1,9 @@
 # Byte-compiled files
 __pycache__/
 
-# Distribution /packaging
+# Distribution / packaging
 *.egg-info/
 .eggs/
 build/
 dist/
+docs/_build/
