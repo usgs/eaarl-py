@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # vim: set fileencoding=utf-8 :
-'''Conversion to/from UTM'''
+'''Time utility functions'''
 
 # Boilerplate for cross-compatibility of Python 2/3
 from __future__ import unicode_literals
@@ -13,6 +13,8 @@ future.standard_library.install_aliases()
 
 import datetime
 
+# When updating this list, be sure to update the documentation for
+# gps_utc_offset.
 LEAP_DATES = [
     datetime.date(1981, 6, 30),
     datetime.date(1982, 6, 30),
@@ -40,6 +42,17 @@ def date_epoch_seconds(date):
     return delta.total_seconds()
 
 def gps_utc_offset(date):
-    '''Returns the offset in seconds between UTC and GPS time on a date'''
+    '''Returns the offset in seconds between UTC and GPS time on a date
+
+    .. warning::
+
+        The offset is calculated using a hard-coded list of UTC leap second
+        dates. If leap seconds are added in the future,
+        *eaarl.util.time.LEAP_DATES* will need to be updated. Leap seconds are
+        announced by the International Earth Rotation and Reference Systems
+        Service (IERS) via Bulletin C. See http://hpiers.obspm.fr/eop-pc for
+        more information. The list of leap second dates in *LEAP_DATES* is
+        currently accurate through at least June 2018.
+    '''
     leap = [d for d in LEAP_DATES if d < date]
     return len(leap)
