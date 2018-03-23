@@ -1,0 +1,123 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>eaarl.util.time &#8212; eaarl-py 0.1.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="eaarl.util.utm" href="eaarl.util.utm.html" />
+    <link rel="prev" title="eaarl.rcf" href="eaarl.rcf.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-eaarl.util.time">
+<span id="eaarl-util-time"></span><h1>eaarl.util.time<a class="headerlink" href="#module-eaarl.util.time" title="Permalink to this headline">¶</a></h1>
+<p>Time utility functions</p>
+<dl class="function">
+<dt id="eaarl.util.time.date_epoch_seconds">
+<code class="descclassname">eaarl.util.time.</code><code class="descname">date_epoch_seconds</code><span class="sig-paren">(</span><em>date</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eaarl/util/time.html#date_epoch_seconds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eaarl.util.time.date_epoch_seconds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the seconds-of-the-epoch time for the start of a date</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="eaarl.util.time.gps_utc_offset">
+<code class="descclassname">eaarl.util.time.</code><code class="descname">gps_utc_offset</code><span class="sig-paren">(</span><em>date</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eaarl/util/time.html#gps_utc_offset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eaarl.util.time.gps_utc_offset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the offset in seconds between UTC and GPS time on a date</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">The offset is calculated using a hard-coded list of UTC leap second
+dates. If leap seconds are added in the future,
+<em>eaarl.util.time.LEAP_DATES</em> will need to be updated. Leap seconds are
+announced by the International Earth Rotation and Reference Systems
+Service (IERS) via Bulletin C. See <a class="reference external" href="http://hpiers.obspm.fr/eop-pc">http://hpiers.obspm.fr/eop-pc</a> for
+more information. The list of leap second dates in <em>LEAP_DATES</em> is
+currently accurate through at least June 2018.</p>
+</div>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../code.html">Code documentation</a><ul>
+      <li>Previous: <a href="eaarl.rcf.html" title="previous chapter">eaarl.rcf</a></li>
+      <li>Next: <a href="eaarl.util.utm.html" title="next chapter">eaarl.util.utm</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/code/eaarl.util.time.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      
+      
+      
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/code/eaarl.util.time.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

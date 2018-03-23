@@ -1,0 +1,357 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>eaarl.project &#8212; eaarl-py 0.1.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for eaarl.project</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1"># vim: set fileencoding=utf-8 :</span>
+<span class="sd">&#39;&#39;&#39;Geometry for mirror and target projection&#39;&#39;&#39;</span>
+
+<span class="c1"># Boilerplate for cross-compatibility of Python 2/3</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">unicode_literals</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">absolute_import</span>
+<span class="kn">from</span> <span class="nn">future.builtins</span> <span class="k">import</span> <span class="o">*</span> <span class="c1"># pylint: disable=wildcard-import</span>
+<span class="kn">import</span> <span class="nn">future.standard_library</span>
+<span class="n">future</span><span class="o">.</span><span class="n">standard_library</span><span class="o">.</span><span class="n">install_aliases</span><span class="p">()</span>
+
+<span class="kn">import</span> <span class="nn">math</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy.constants</span> <span class="k">import</span> <span class="n">nano</span>
+<span class="kn">from</span> <span class="nn">.constants</span> <span class="k">import</span> <span class="n">speed_of_light_air</span>
+
+<span class="kn">from</span> <span class="nn">.io.waveforms._util</span> <span class="k">import</span> <span class="n">scan_counts_to_degrees</span>
+
+<div class="viewcode-block" id="target_range"><a class="viewcode-back" href="../../code/eaarl.project.html#eaarl.project.target_range">[docs]</a><span class="k">def</span> <span class="nf">target_range</span><span class="p">(</span><span class="n">base_range</span><span class="p">,</span> <span class="n">tx_pos</span><span class="p">,</span> <span class="n">rx_pos</span><span class="p">,</span> <span class="n">channel</span><span class="p">,</span> <span class="n">ops</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Calculate range from mirror to target</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">        base_range : array-like of integer</span>
+<span class="sd">            Nanoseconds from start of transmit waveform to return waveform</span>
+<span class="sd">            (i.e., frame.range)</span>
+<span class="sd">        tx_pos : array-like of float</span>
+<span class="sd">            Position in transmit of center of energy</span>
+<span class="sd">        rx_pos : array-like of float</span>
+<span class="sd">            Position in return of target center of energy</span>
+<span class="sd">        channel : array-like of integer</span>
+<span class="sd">            Channel of point</span>
+<span class="sd">        ops : dict</span>
+<span class="sd">            The ops conf data from the flight</span>
+
+<span class="sd">    Returns : float</span>
+<span class="sd">        Distance from mirror to target, in meters.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">range_bias</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">ops</span><span class="p">[</span><span class="s1">&#39;chn</span><span class="si">{0}</span><span class="s1">_range_bias&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">chan</span><span class="p">)]</span> <span class="k">for</span> <span class="n">chan</span> <span class="ow">in</span> <span class="n">channel</span><span class="p">])</span>
+    <span class="n">samples</span> <span class="o">=</span> <span class="n">base_range</span> <span class="o">+</span> <span class="n">rx_pos</span> <span class="o">-</span> <span class="n">tx_pos</span> <span class="o">+</span> <span class="n">range_bias</span>
+    <span class="n">distance</span> <span class="o">=</span> <span class="n">samples</span> <span class="o">*</span> <span class="n">nano</span> <span class="o">*</span> <span class="n">speed_of_light_air</span> <span class="o">*</span> <span class="mf">0.5</span>
+    <span class="k">return</span> <span class="n">distance</span> <span class="o">-</span> <span class="n">ops</span><span class="p">[</span><span class="s1">&#39;range_biasM&#39;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="project_mirror"><a class="viewcode-back" href="../../code/eaarl.project.html#eaarl.project.project_mirror">[docs]</a><span class="k">def</span> <span class="nf">project_mirror</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">ops</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Calculate mirror position</span>
+
+<span class="sd">    Adds the mirror position to the frame DataFrame as mir_x, mir_y, and</span>
+<span class="sd">    mir_z.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">        frame : pandas.DataFrame</span>
+<span class="sd">            A DataFrame containing the pulse records.</span>
+<span class="sd">        ops : dict</span>
+<span class="sd">            The ops conf data from the flight</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">R_ar</span> <span class="o">=</span> <span class="n">_frame_rotation_aircraft</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">ops</span><span class="p">)</span>
+    <span class="n">s_gm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">ops</span><span class="p">[</span><span class="s1">&#39;x_offset&#39;</span><span class="p">],</span> <span class="n">ops</span><span class="p">[</span><span class="s1">&#39;y_offset&#39;</span><span class="p">],</span> <span class="n">ops</span><span class="p">[</span><span class="s1">&#39;z_offset&#39;</span><span class="p">]])</span>
+    <span class="n">p_g</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">frame</span><span class="o">.</span><span class="n">ins_east</span><span class="p">,</span> <span class="n">frame</span><span class="o">.</span><span class="n">ins_north</span><span class="p">,</span> <span class="n">frame</span><span class="o">.</span><span class="n">ins_alt</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="n">p_m</span> <span class="o">=</span> <span class="n">_calc_mirror</span><span class="p">(</span><span class="n">R_ar</span><span class="p">,</span> <span class="n">s_gm</span><span class="p">,</span> <span class="n">p_g</span><span class="p">)</span>
+    <span class="n">frame</span><span class="p">[</span><span class="s1">&#39;mir_x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">p_m</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">frame</span><span class="p">[</span><span class="s1">&#39;mir_y&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">p_m</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">frame</span><span class="p">[</span><span class="s1">&#39;mir_z&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">p_m</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="project_point"><a class="viewcode-back" href="../../code/eaarl.project.html#eaarl.project.project_point">[docs]</a><span class="k">def</span> <span class="nf">project_point</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">ops</span><span class="p">,</span> <span class="n">r_mt</span><span class="p">,</span> <span class="n">coord_prefix</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Calculate the target point position</span>
+
+<span class="sd">    Adds the target position to the frame DataFrame as x, y, and z, with the</span>
+<span class="sd">    prefix prepended if provided.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">        frame : pandas.DataFrame</span>
+<span class="sd">            A DataFrame containing the pulse records.</span>
+<span class="sd">        ops : dict</span>
+<span class="sd">            The ops conf data from the flight</span>
+<span class="sd">        r_mt : array-like of float</span>
+<span class="sd">            Distance from mirror to target, in meters</span>
+<span class="sd">        coord_prefix : string</span>
+<span class="sd">            A prefix to prepend to x, y, and z when adding the target</span>
+<span class="sd">            coordinates to the DataFrame. The prefix will have _ added if</span>
+<span class="sd">            missing. For example, if ``coord_prefix=&#39;fs&#39;``, then the target</span>
+<span class="sd">            coordinates will be added as &#39;fs_x&#39;, &#39;fs_y&#39;, and &#39;fs_z&#39;.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">R_ar</span> <span class="o">=</span> <span class="n">_frame_rotation_aircraft</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">ops</span><span class="p">)</span>
+    <span class="n">p_m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">frame</span><span class="o">.</span><span class="n">mir_x</span><span class="p">,</span> <span class="n">frame</span><span class="o">.</span><span class="n">mir_y</span><span class="p">,</span> <span class="n">frame</span><span class="o">.</span><span class="n">mir_z</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="n">broadcast</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">val</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">frame</span><span class="o">.</span><span class="n">mir_x</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span>
+
+    <span class="n">t_la_z</span> <span class="o">=</span> <span class="n">broadcast</span><span class="p">(</span><span class="mf">0.</span><span class="p">)</span>
+    <span class="n">t_la_x</span> <span class="o">=</span> <span class="n">broadcast</span><span class="p">(</span><span class="mf">45.</span> <span class="o">-</span> <span class="mf">0.4</span><span class="p">)</span>
+    <span class="n">t_ma_z</span> <span class="o">=</span> <span class="n">broadcast</span><span class="p">(</span><span class="mf">0.</span><span class="p">)</span>
+    <span class="n">t_ma_x</span> <span class="o">=</span> <span class="n">broadcast</span><span class="p">(</span><span class="o">-</span><span class="mf">22.5</span><span class="p">)</span>
+    <span class="n">t_ma_y</span> <span class="o">=</span> <span class="n">broadcast</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">scan_angle</span> <span class="o">+</span>
+                       <span class="n">scan_counts_to_degrees</span><span class="p">(</span><span class="n">ops</span><span class="p">[</span><span class="s1">&#39;scan_bias&#39;</span><span class="p">]))</span>
+
+    <span class="n">t_ma_y</span><span class="p">,</span> <span class="n">t_la_x</span> <span class="o">=</span> <span class="n">_spacing</span><span class="p">(</span><span class="n">t_ma_y</span><span class="p">,</span> <span class="n">t_la_x</span><span class="p">,</span> <span class="n">frame</span><span class="o">.</span><span class="n">channel</span><span class="p">,</span> <span class="n">ops</span><span class="p">)</span>
+
+    <span class="n">dv_i</span> <span class="o">=</span> <span class="n">_calc_incidence</span><span class="p">(</span><span class="n">R_ar</span><span class="p">,</span> <span class="n">t_la_z</span><span class="p">,</span> <span class="n">t_la_x</span><span class="p">)</span>
+    <span class="n">dv_n</span> <span class="o">=</span> <span class="n">_calc_normal</span><span class="p">(</span><span class="n">R_ar</span><span class="p">,</span> <span class="n">t_ma_z</span><span class="p">,</span> <span class="n">t_ma_x</span><span class="p">,</span> <span class="n">t_ma_y</span><span class="p">)</span>
+    <span class="k">del</span> <span class="n">R_ar</span>
+    <span class="n">dv_s</span> <span class="o">=</span> <span class="n">_calc_reflection</span><span class="p">(</span><span class="n">dv_i</span><span class="p">,</span> <span class="n">dv_n</span><span class="p">)</span>
+    <span class="k">del</span> <span class="n">dv_i</span><span class="p">,</span> <span class="n">dv_n</span>
+    <span class="n">p_t</span> <span class="o">=</span> <span class="n">_calc_target</span><span class="p">(</span><span class="n">dv_s</span><span class="p">,</span> <span class="n">r_mt</span><span class="p">,</span> <span class="n">p_m</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">coord_prefix</span> <span class="ow">and</span> <span class="n">coord_prefix</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">:]</span> <span class="o">!=</span> <span class="s1">&#39;_&#39;</span><span class="p">:</span>
+        <span class="n">coord_prefix</span> <span class="o">+=</span> <span class="s1">&#39;_&#39;</span>
+
+    <span class="n">frame</span><span class="p">[</span><span class="n">coord_prefix</span> <span class="o">+</span> <span class="s1">&#39;x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">p_t</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">frame</span><span class="p">[</span><span class="n">coord_prefix</span> <span class="o">+</span> <span class="s1">&#39;y&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">p_t</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">frame</span><span class="p">[</span><span class="n">coord_prefix</span> <span class="o">+</span> <span class="s1">&#39;z&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">p_t</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span></div>
+
+<span class="k">def</span> <span class="nf">_spacing</span><span class="p">(</span><span class="n">t_ma_y</span><span class="p">,</span> <span class="n">t_la_x</span><span class="p">,</span> <span class="n">channels</span><span class="p">,</span> <span class="n">ops</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Adjusts the angles for the EAARL-B target spacing</span>
+
+<span class="sd">    Returns the adjusted (t_ma_y, t_la_x). The angles are adjusted to account</span>
+<span class="sd">    for the EAARL-B target spacing.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">        t_ma_y : array-like of float</span>
+<span class="sd">            Array of mirror y-axis rotations, in degrees</span>
+<span class="sd">        t_la_x : array-like of float</span>
+<span class="sd">            Array of laser x-axis rotations, in degrees</span>
+<span class="sd">        channels : array-like of integer</span>
+<span class="sd">            Channel of point</span>
+<span class="sd">        ops : dict</span>
+<span class="sd">            The ops conf data from the flight</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="s1">&#39;delta_ht&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ops</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">t_ma_y</span><span class="p">,</span> <span class="n">t_la_x</span>
+
+    <span class="n">dz</span> <span class="o">=</span> <span class="n">ops</span><span class="p">[</span><span class="s1">&#39;delta_ht&#39;</span><span class="p">]</span>
+
+    <span class="k">for</span> <span class="n">channel</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">channels</span><span class="p">):</span>
+        <span class="n">where</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">channel</span><span class="p">)</span> <span class="o">==</span> <span class="n">channels</span><span class="p">)</span>
+
+        <span class="n">dx</span> <span class="o">=</span> <span class="n">ops</span><span class="p">[</span><span class="s1">&#39;chn</span><span class="si">{0}</span><span class="s1">_dx&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">channel</span><span class="p">)]</span>
+        <span class="n">dy</span> <span class="o">=</span> <span class="n">ops</span><span class="p">[</span><span class="s1">&#39;chn</span><span class="si">{0}</span><span class="s1">_dy&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">channel</span><span class="p">)]</span>
+
+        <span class="k">if</span> <span class="n">dx</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">dz</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">tx</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">atan2</span><span class="p">(</span><span class="n">dx</span><span class="p">,</span> <span class="n">dz</span><span class="p">))</span>
+            <span class="n">t_ma_y</span><span class="p">[</span><span class="n">where</span><span class="p">]</span> <span class="o">-=</span> <span class="n">tx</span>
+
+        <span class="k">if</span> <span class="n">dy</span> <span class="o">!=</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">dz</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">ty</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">atan2</span><span class="p">(</span><span class="n">dy</span><span class="p">,</span> <span class="n">dz</span><span class="p">))</span>
+            <span class="n">t_la_x</span><span class="p">[</span><span class="n">where</span><span class="p">]</span> <span class="o">-=</span> <span class="n">ty</span>
+
+    <span class="k">return</span> <span class="n">t_ma_y</span><span class="p">,</span> <span class="n">t_la_x</span>
+
+<span class="k">def</span> <span class="nf">_frame_rotation_aircraft</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">ops</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Returns rotation matrix for the aircraft&#39;&#39;&#39;</span>
+    <span class="n">t_ar_z</span> <span class="o">=</span> <span class="o">-</span><span class="n">frame</span><span class="o">.</span><span class="n">ins_heading</span> <span class="o">+</span> <span class="n">ops</span><span class="p">[</span><span class="s1">&#39;yaw_bias&#39;</span><span class="p">]</span>
+    <span class="n">t_ar_x</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">ins_pitch</span> <span class="o">+</span> <span class="n">ops</span><span class="p">[</span><span class="s1">&#39;pitch_bias&#39;</span><span class="p">]</span>
+    <span class="n">t_ar_y</span> <span class="o">=</span> <span class="n">frame</span><span class="o">.</span><span class="n">ins_roll</span> <span class="o">+</span> <span class="n">ops</span><span class="p">[</span><span class="s1">&#39;roll_bias&#39;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">_rotation_aircraft</span><span class="p">(</span><span class="n">t_ar_z</span><span class="p">,</span> <span class="n">t_ar_x</span><span class="p">,</span> <span class="n">t_ar_y</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_rotation_aircraft</span><span class="p">(</span><span class="n">t_ar_z</span><span class="p">,</span> <span class="n">t_ar_x</span><span class="p">,</span> <span class="n">t_ar_y</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Returns rotation matrx for the aircraft&#39;&#39;&#39;</span>
+    <span class="n">t_ar_x_rad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">t_ar_x</span><span class="p">)</span>
+    <span class="n">cos_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">t_ar_x_rad</span><span class="p">)</span>
+    <span class="n">sin_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">t_ar_x_rad</span><span class="p">)</span>
+    <span class="k">del</span> <span class="n">t_ar_x_rad</span>
+
+    <span class="n">t_ar_y_rad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">t_ar_y</span><span class="p">)</span>
+    <span class="n">cos_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">t_ar_y_rad</span><span class="p">)</span>
+    <span class="n">sin_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">t_ar_y_rad</span><span class="p">)</span>
+    <span class="k">del</span> <span class="n">t_ar_y_rad</span>
+
+    <span class="n">t_ar_z_rad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">t_ar_z</span><span class="p">)</span>
+    <span class="n">cos_z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">t_ar_z_rad</span><span class="p">)</span>
+    <span class="n">sin_z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">t_ar_z_rad</span><span class="p">)</span>
+    <span class="k">del</span> <span class="n">t_ar_z_rad</span>
+
+    <span class="n">sin_x_sin_y</span> <span class="o">=</span> <span class="n">sin_x</span> <span class="o">*</span> <span class="n">sin_y</span>
+    <span class="n">cos_y_cos_z</span> <span class="o">=</span> <span class="n">cos_y</span> <span class="o">*</span> <span class="n">cos_z</span>
+    <span class="n">cos_y_sin_z</span> <span class="o">=</span> <span class="n">cos_y</span> <span class="o">*</span> <span class="n">sin_z</span>
+
+    <span class="n">R_ar</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">cos_x</span><span class="o">.</span><span class="n">shape</span> <span class="o">+</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+
+    <span class="n">R_ar</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">cos_y_cos_z</span> <span class="o">-</span> <span class="n">sin_z</span> <span class="o">*</span> <span class="n">sin_x_sin_y</span>
+    <span class="n">R_ar</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span> <span class="n">sin_z</span> <span class="o">*</span> <span class="n">cos_x</span>
+    <span class="n">R_ar</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">cos_z</span> <span class="o">*</span> <span class="n">sin_y</span> <span class="o">+</span> <span class="n">cos_y_sin_z</span> <span class="o">*</span> <span class="n">sin_x</span>
+
+    <span class="n">R_ar</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">cos_y_sin_z</span> <span class="o">+</span> <span class="n">cos_z</span> <span class="o">*</span> <span class="n">sin_x_sin_y</span>
+    <span class="n">R_ar</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">cos_x</span> <span class="o">*</span> <span class="n">cos_z</span>
+    <span class="n">R_ar</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">sin_y</span> <span class="o">*</span> <span class="n">sin_z</span> <span class="o">-</span> <span class="n">cos_y_cos_z</span> <span class="o">*</span> <span class="n">sin_x</span>
+
+    <span class="n">R_ar</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span> <span class="n">cos_x</span> <span class="o">*</span> <span class="n">sin_y</span>
+    <span class="n">R_ar</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">sin_x</span>
+    <span class="n">R_ar</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">cos_x</span> <span class="o">*</span> <span class="n">cos_y</span>
+
+    <span class="k">return</span> <span class="n">R_ar</span>
+
+<span class="k">def</span> <span class="nf">_calc_mirror</span><span class="p">(</span><span class="n">R_ar</span><span class="p">,</span> <span class="n">s_gm</span><span class="p">,</span> <span class="n">p_g</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Calculates the mirror position&#39;&#39;&#39;</span>
+    <span class="n">p_m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">p_g</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+    <span class="n">p_m</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">p_g</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span>
+        <span class="n">R_ar</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">s_gm</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span>
+        <span class="n">R_ar</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">s_gm</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span>
+        <span class="n">R_ar</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">s_gm</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="p">)</span>
+    <span class="n">p_m</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">p_g</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span>
+        <span class="n">R_ar</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">s_gm</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span>
+        <span class="n">R_ar</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">s_gm</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span>
+        <span class="n">R_ar</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">s_gm</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="p">)</span>
+    <span class="n">p_m</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">p_g</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">+</span>
+        <span class="n">R_ar</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">s_gm</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span>
+        <span class="n">R_ar</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">s_gm</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">+</span>
+        <span class="n">R_ar</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">s_gm</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">p_m</span>
+
+<span class="k">def</span> <span class="nf">_calc_incidence</span><span class="p">(</span><span class="n">R_ar</span><span class="p">,</span> <span class="n">t_la_z</span><span class="p">,</span> <span class="n">t_la_x</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Calculates the laser angle of incidence&#39;&#39;&#39;</span>
+    <span class="n">sin</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">theta</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)[</span><span class="o">...</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+    <span class="n">cos</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">theta</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)[</span><span class="o">...</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">t_la_x</span><span class="p">)</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">t_la_z</span><span class="p">)</span>
+
+    <span class="n">dv_i</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">R_ar</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">z</span><span class="p">)</span> <span class="o">-</span>
+        <span class="n">R_ar</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">dv_i</span> <span class="o">*=</span> <span class="n">cos</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">dv_i</span> <span class="o">-=</span> <span class="n">R_ar</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">dv_i</span>
+
+<span class="k">def</span> <span class="nf">_calc_normal</span><span class="p">(</span><span class="n">R_ar</span><span class="p">,</span> <span class="n">t_ma_z</span><span class="p">,</span> <span class="n">t_ma_x</span><span class="p">,</span> <span class="n">t_ma_y</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Calculates the laser normal angle&#39;&#39;&#39;</span>
+    <span class="n">t_ma_x_rad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">t_ma_x</span><span class="p">),</span> <span class="n">R_ar</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]))</span>
+    <span class="n">cos_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">t_ma_x_rad</span><span class="p">)</span>
+    <span class="n">sin_x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">t_ma_x_rad</span><span class="p">)</span>
+    <span class="k">del</span> <span class="n">t_ma_x_rad</span>
+
+    <span class="n">t_ma_y_rad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">t_ma_y</span><span class="p">),</span> <span class="n">R_ar</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]))</span>
+    <span class="n">cos_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">t_ma_y_rad</span><span class="p">)</span>
+    <span class="n">sin_y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">t_ma_y_rad</span><span class="p">)</span>
+    <span class="k">del</span> <span class="n">t_ma_y_rad</span>
+
+    <span class="n">t_ma_z_rad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">broadcast_to</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">t_ma_z</span><span class="p">),</span> <span class="n">R_ar</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]))</span>
+    <span class="n">cos_z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">t_ma_z_rad</span><span class="p">)</span>
+    <span class="n">sin_z</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">t_ma_z_rad</span><span class="p">)</span>
+    <span class="k">del</span> <span class="n">t_ma_z_rad</span>
+
+    <span class="n">sin_x_cos_y</span> <span class="o">=</span> <span class="n">sin_x</span> <span class="o">*</span> <span class="n">cos_y</span>
+
+    <span class="n">dv_n</span> <span class="o">=</span> <span class="n">R_ar</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span>
+        <span class="p">(</span><span class="n">sin_y</span> <span class="o">*</span> <span class="n">cos_z</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">sin_x_cos_y</span> <span class="o">*</span> <span class="n">sin_z</span><span class="p">)</span>
+    <span class="p">)[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+    <span class="n">dv_n</span> <span class="o">+=</span> <span class="n">R_ar</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span>
+        <span class="n">sin_y</span> <span class="o">*</span> <span class="n">sin_z</span> <span class="o">-</span> <span class="n">sin_x_cos_y</span> <span class="o">*</span> <span class="n">cos_z</span>
+    <span class="p">)[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+    <span class="n">dv_n</span> <span class="o">+=</span> <span class="n">R_ar</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">cos_x</span> <span class="o">*</span> <span class="n">cos_y</span><span class="p">)[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">dv_n</span>
+
+<span class="k">def</span> <span class="nf">_calc_reflection</span><span class="p">(</span><span class="n">dv_i</span><span class="p">,</span> <span class="n">dv_n</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Calculates the laser reflection angle&#39;&#39;&#39;</span>
+    <span class="k">return</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">dv_i</span> <span class="o">*</span> <span class="n">dv_n</span><span class="p">,</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">*</span> <span class="n">dv_n</span> <span class="o">-</span> <span class="n">dv_i</span>
+
+<span class="k">def</span> <span class="nf">_calc_target</span><span class="p">(</span><span class="n">dv_s</span><span class="p">,</span> <span class="n">r_mt</span><span class="p">,</span> <span class="n">p_m</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Calculates the target position&#39;&#39;&#39;</span>
+    <span class="k">return</span> <span class="n">dv_s</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">r_mt</span><span class="p">)[</span><span class="o">...</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span> <span class="o">+</span> <span class="n">p_m</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      
+      
+      
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

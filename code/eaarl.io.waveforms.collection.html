@@ -1,0 +1,282 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>eaarl.io.waveforms.collection &#8212; eaarl-py 0.1.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="eaarl.io.waveforms.edb" href="eaarl.io.waveforms.edb.html" />
+    <link rel="prev" title="eaarl.io.waveforms" href="eaarl.io.waveforms.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-eaarl.io.waveforms.collection">
+<span id="eaarl-io-waveforms-collection"></span><h1>eaarl.io.waveforms.collection<a class="headerlink" href="#module-eaarl.io.waveforms.collection" title="Permalink to this headline">¶</a></h1>
+<p>Handling for a collection of TLD waveform data</p>
+<dl class="class">
+<dt id="eaarl.io.waveforms.collection.EaarlCollection">
+<em class="property">class </em><code class="descclassname">eaarl.io.waveforms.collection.</code><code class="descname">EaarlCollection</code><span class="sig-paren">(</span><em>edb_file=None</em>, <em>tld_path=None</em>, <em>edb_data=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eaarl/io/waveforms/collection.html#EaarlCollection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eaarl.io.waveforms.collection.EaarlCollection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Collection of EAARL waveform data.</p>
+<p>The collection comprises an EDB file and associated TLD files.</p>
+<dl class="method">
+<dt id="eaarl.io.waveforms.collection.EaarlCollection.__init__">
+<code class="descname">__init__</code><span class="sig-paren">(</span><em>edb_file=None</em>, <em>tld_path=None</em>, <em>edb_data=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eaarl/io/waveforms/collection.html#EaarlCollection.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eaarl.io.waveforms.collection.EaarlCollection.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create an EaarlCollection</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd><dl class="first last docutils">
+<dt>edb_file <span class="classifier-delimiter">:</span> <span class="classifier">string or None</span></dt>
+<dd>Path to an EDB file</dd>
+<dt>tld_path <span class="classifier-delimiter">:</span> <span class="classifier">string or None</span></dt>
+<dd>Path to the TLD files</dd>
+<dt>edb_data <span class="classifier-delimiter">:</span> <span class="classifier">sequence of dicts or None</span></dt>
+<dd>Return result from <a class="reference internal" href="eaarl.io.waveforms.edb.html#eaarl.io.waveforms.edb.read" title="eaarl.io.waveforms.edb.read"><code class="xref py py-func docutils literal"><span class="pre">eaarl.io.waveforms.edb.read()</span></code></a>.</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="eaarl.io.waveforms.collection.EaarlCollection.get_rasters">
+<code class="descname">get_rasters</code><span class="sig-paren">(</span><em>rasters=None</em>, <em>start=None</em>, <em>count=1</em>, <em>ranges=None</em>, <em>progress=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eaarl/io/waveforms/collection.html#EaarlCollection.get_rasters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eaarl.io.waveforms.collection.EaarlCollection.get_rasters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve raster data for raster numbers</p>
+<p>Returns array of dicts containing the raster data. If start and count
+are provided, then raster records are provided for the given range. If
+ranges is provided, then it is treated as a sequence of (start, count)
+entries. If rasters is provided, it should be a sequence of raster
+numbers.</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd><dl class="first last docutils">
+<dt>rasters <span class="classifier-delimiter">:</span> <span class="classifier">integer or sequence of integers or None</span></dt>
+<dd>Mission data for a flight</dd>
+<dt>start <span class="classifier-delimiter">:</span> <span class="classifier">integer or None</span></dt>
+<dd>Starting raster number</dd>
+<dt>count <span class="classifier-delimiter">:</span> <span class="classifier">integer, default 1</span></dt>
+<dd>Number of rasters to retrieve</dd>
+<dt>ranges <span class="classifier-delimiter">:</span> <span class="classifier">sequence of tuples</span></dt>
+<dd>Sequence of (start, count) tuples.</dd>
+<dt>progress <span class="classifier-delimiter">:</span> <span class="classifier">tqdm.tqdm or boolean, default True</span></dt>
+<dd>If True and if tqdm is available for import, then a progressbar
+will be displayed during raster reading. Specify False to
+disable. You can also specify your own instance of tqdm.tqdm
+(or compatible) for customizing output.</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="eaarl.io.waveforms.collection.EaarlCollection.get_rasters_by_time">
+<code class="descname">get_rasters_by_time</code><span class="sig-paren">(</span><em>start=None</em>, <em>stop=None</em>, <em>ranges=None</em>, <em>progress=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eaarl/io/waveforms/collection.html#EaarlCollection.get_rasters_by_time"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eaarl.io.waveforms.collection.EaarlCollection.get_rasters_by_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Retrieve raster data for given time ranges</p>
+<p>Returns array of dicts containing the raster data. If start and stop
+are provided, then records are returned such that start &lt;= raster time
+&lt; stop. If ranges is provided, then each tuple of start, stop are used.</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd><dl class="first last docutils">
+<dt>start <span class="classifier-delimiter">:</span> <span class="classifier">numeric or None</span></dt>
+<dd>A start time</dd>
+<dt>stop <span class="classifier-delimiter">:</span> <span class="classifier">numeric or None</span></dt>
+<dd>A stop time</dd>
+<dt>ranges <span class="classifier-delimiter">:</span> <span class="classifier">sequence of tuples or None</span></dt>
+<dd>Sequence of <em>(start, stop)</em> tuples</dd>
+<dt>progress <span class="classifier-delimiter">:</span> <span class="classifier">tqdm.tqdm or boolean, default True</span></dt>
+<dd>If True and if tqdm is available for import, then a progressbar
+will be displayed during raster reading. Specify False to
+disable. You can also specify your own instance of tqdm.tqdm
+(or compatible) for customizing output.</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="eaarl.io.waveforms.collection.EaarlCollection.lookup_rasters_by_time">
+<code class="descname">lookup_rasters_by_time</code><span class="sig-paren">(</span><em>start=None</em>, <em>stop=None</em>, <em>ranges=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eaarl/io/waveforms/collection.html#EaarlCollection.lookup_rasters_by_time"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eaarl.io.waveforms.collection.EaarlCollection.lookup_rasters_by_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Lookup raster number for given times</p>
+<p>Returns array of raster numbers. If start and stop are provided, then
+record numbers are returned such that start &lt;= raster time &lt; stop. If
+ranges is provided, then each tuple of start, stop are used.</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd><dl class="first last docutils">
+<dt>start <span class="classifier-delimiter">:</span> <span class="classifier">numeric or None</span></dt>
+<dd>A start time</dd>
+<dt>stop <span class="classifier-delimiter">:</span> <span class="classifier">numeric or None</span></dt>
+<dd>A stop time</dd>
+<dt>ranges <span class="classifier-delimiter">:</span> <span class="classifier">sequence of tuples or None</span></dt>
+<dd>Sequence of start and stop tuples</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="eaarl.io.waveforms.collection.collection_open">
+<code class="descclassname">eaarl.io.waveforms.collection.</code><code class="descname">collection_open</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwds</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eaarl/io/waveforms/collection.html#collection_open"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eaarl.io.waveforms.collection.collection_open" title="Permalink to this definition">¶</a></dt>
+<dd><p>Context manager for an <a class="reference internal" href="#eaarl.io.waveforms.collection.EaarlCollection" title="eaarl.io.waveforms.collection.EaarlCollection"><code class="xref py py-class docutils literal"><span class="pre">EaarlCollection</span></code></a>.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="eaarl.io.waveforms.collection.pulses_to_waveforms">
+<code class="descclassname">eaarl.io.waveforms.collection.</code><code class="descname">pulses_to_waveforms</code><span class="sig-paren">(</span><em>pulses</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eaarl/io/waveforms/collection.html#pulses_to_waveforms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eaarl.io.waveforms.collection.pulses_to_waveforms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flatten sequence of pulses for their waveforms</p>
+<p>The channel related fields are flattened out for each channel, with each
+pulse duplicated for each of the channels.</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd><dl class="first last docutils">
+<dt>pulses <span class="classifier-delimiter">:</span> <span class="classifier">sequence of dicts</span></dt>
+<dd>Pulse data</dd>
+</dl>
+</dd>
+</dl>
+<p>Returns sequence of dicts</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="eaarl.io.waveforms.collection.rasters_to_pulses">
+<code class="descclassname">eaarl.io.waveforms.collection.</code><code class="descname">rasters_to_pulses</code><span class="sig-paren">(</span><em>rasters</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eaarl/io/waveforms/collection.html#rasters_to_pulses"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eaarl.io.waveforms.collection.rasters_to_pulses" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flatten sequence of rasters to sequence of pulses</p>
+<p>Raster records contain a pulse entry that is a list of pulse records. This
+flattens it to combine raster and pulse data for each pulse.</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd><dl class="first last docutils">
+<dt>rasters <span class="classifier-delimiter">:</span> <span class="classifier">sequence of dicts</span></dt>
+<dd>Raster data</dd>
+</dl>
+</dd>
+</dl>
+<p>Returns sequence of dicts</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="eaarl.io.waveforms.collection.rasters_tx_clean">
+<code class="descclassname">eaarl.io.waveforms.collection.</code><code class="descname">rasters_tx_clean</code><span class="sig-paren">(</span><em>rasters</em>, <em>pos</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eaarl/io/waveforms/collection.html#rasters_tx_clean"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eaarl.io.waveforms.collection.rasters_tx_clean" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cleans up the transmit waveforms</p>
+<p>Sets all sample values in the tx waveforms starting at 1-based index pos to
+the same as the first sample value in the waveform.</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd><dl class="first last docutils">
+<dt>rasters <span class="classifier-delimiter">:</span> <span class="classifier">sequence of dicts</span></dt>
+<dd>Sequence of dicts that contain pulse entries, which in turn contain
+tx entries</dd>
+<dt>pos <span class="classifier-delimiter">:</span> <span class="classifier">integer</span></dt>
+<dd>1-based index into the transmit waveforms where cleaning should
+start</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="eaarl.io.waveforms.collection.rasters_wf_flip">
+<code class="descclassname">eaarl.io.waveforms.collection.</code><code class="descname">rasters_wf_flip</code><span class="sig-paren">(</span><em>rasters</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eaarl/io/waveforms/collection.html#rasters_wf_flip"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eaarl.io.waveforms.collection.rasters_wf_flip" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flips the tx and rx waveforms</p>
+<p>EAARL raw waveforms are inverted: high sample values indicate a low
+response and low sample values indicate a high response. This function
+flips the values so that low responses have low values and high responses
+have high values.</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd><dl class="first last docutils">
+<dt>rasters <span class="classifier-delimiter">:</span> <span class="classifier">sequence of dicts</span></dt>
+<dd>Sequence of dicts that contain pulse entries, which in turn contain
+tx and rx entries</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../code.html">Code documentation</a><ul>
+      <li>Previous: <a href="eaarl.io.waveforms.html" title="previous chapter">eaarl.io.waveforms</a></li>
+      <li>Next: <a href="eaarl.io.waveforms.edb.html" title="next chapter">eaarl.io.waveforms.edb</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/code/eaarl.io.waveforms.collection.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      
+      
+      
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/code/eaarl.io.waveforms.collection.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

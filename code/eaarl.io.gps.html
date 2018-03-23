@@ -1,0 +1,129 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>eaarl.io.gps &#8212; eaarl-py 0.1.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="eaarl.io.ins" href="eaarl.io.ins.html" />
+    <link rel="prev" title="eaarl.io.flight" href="eaarl.io.flight.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-eaarl.io.gps">
+<span id="eaarl-io-gps"></span><h1>eaarl.io.gps<a class="headerlink" href="#module-eaarl.io.gps" title="Permalink to this headline">¶</a></h1>
+<p>Handling for gps trajectory files</p>
+<dl class="function">
+<dt id="eaarl.io.gps.apply_corrections">
+<code class="descclassname">eaarl.io.gps.</code><code class="descname">apply_corrections</code><span class="sig-paren">(</span><em>gps</em>, <em>gps_time_offset=0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eaarl/io/gps.html#apply_corrections"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eaarl.io.gps.apply_corrections" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies time correction to gps data</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd><dl class="first last docutils">
+<dt>gps <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span></dt>
+<dd>GPS data as returned by <a class="reference internal" href="#eaarl.io.gps.read" title="eaarl.io.gps.read"><code class="xref py py-func docutils literal"><span class="pre">read()</span></code></a>.</dd>
+<dt>gps_time_offset <span class="classifier-delimiter">:</span> <span class="classifier">numeric</span></dt>
+<dd>GPS time offset to apply to the data to convert it to UTC time.</dd>
+</dl>
+</dd>
+<dt>Returns <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span></dt>
+<dd>Returns the modified gps DataFrame.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="eaarl.io.gps.read">
+<code class="descclassname">eaarl.io.gps.</code><code class="descname">read</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eaarl/io/gps.html#read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eaarl.io.gps.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read GPS data from a given HDF5 file</p>
+<dl class="docutils">
+<dt>Returns <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span></dt>
+<dd>Returns a DataFrame with the file’s data.</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../code.html">Code documentation</a><ul>
+      <li>Previous: <a href="eaarl.io.flight.html" title="previous chapter">eaarl.io.flight</a></li>
+      <li>Next: <a href="eaarl.io.ins.html" title="next chapter">eaarl.io.ins</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/code/eaarl.io.gps.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      
+      
+      
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/code/eaarl.io.gps.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

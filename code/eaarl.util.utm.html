@@ -1,0 +1,149 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>eaarl.util.utm &#8212; eaarl-py 0.1.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="eaarl.util.time" href="eaarl.util.time.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-eaarl.util.utm">
+<span id="eaarl-util-utm"></span><h1>eaarl.util.utm<a class="headerlink" href="#module-eaarl.util.utm" title="Permalink to this headline">¶</a></h1>
+<p>Conversion to/from UTM</p>
+<dl class="function">
+<dt id="eaarl.util.utm.from_latlon">
+<code class="descclassname">eaarl.util.utm.</code><code class="descname">from_latlon</code><span class="sig-paren">(</span><em>latitude</em>, <em>longitude</em>, <em>force_zone_number=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eaarl/util/utm.html#from_latlon"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eaarl.util.utm.from_latlon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts geographic coordinates to UTM coordinates</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd><dl class="first last docutils">
+<dt>latitude <span class="classifier-delimiter">:</span> <span class="classifier">array-like of float</span></dt>
+<dd>Latitude coordinate values</dd>
+<dt>longitude <span class="classifier-delimiter">:</span> <span class="classifier">array-like of float</span></dt>
+<dd>Longitude coordinate values</dd>
+<dt>force_zone_number <span class="classifier-delimiter">:</span> <span class="classifier">integer or None</span></dt>
+<dd>Forces the coordinates to the given UTM zone. If omitted, then points
+are converted to their native UTM zones.</dd>
+</dl>
+</dd>
+<dt>Returns <span class="classifier-delimiter">:</span> <span class="classifier">(array, array, array, array)</span></dt>
+<dd>Returns (easting, northing, zone_number, zone_letter) where each are
+arrays.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="eaarl.util.utm.to_latlon">
+<code class="descclassname">eaarl.util.utm.</code><code class="descname">to_latlon</code><span class="sig-paren">(</span><em>easting</em>, <em>northing</em>, <em>zone_number</em>, <em>zone_letter=None</em>, <em>northern=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eaarl/util/utm.html#to_latlon"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eaarl.util.utm.to_latlon" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts UTM coordinates to geographic coordinates</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd><dl class="first last docutils">
+<dt>easting <span class="classifier-delimiter">:</span> <span class="classifier">array-like of floats</span></dt>
+<dd>Easting of the coordinates.</dd>
+<dt>northing <span class="classifier-delimiter">:</span> <span class="classifier">array-like of floats</span></dt>
+<dd>Northern of the coordinates.</dd>
+<dt>zone_number <span class="classifier-delimiter">:</span> <span class="classifier">integer or array-like of integers</span></dt>
+<dd>Zone of the coordinates.</dd>
+<dt>zone_letter <span class="classifier-delimiter">:</span> <span class="classifier">string or array-like of string or None</span></dt>
+<dd>Specifies the zone letters. This is used to determine whether the
+coordinates are in the northern or southern hemisphere. If omitted,
+then northern is used.</dd>
+<dt>northern <span class="classifier-delimiter">:</span> <span class="classifier">Boolean or array-like of Booleans or None</span></dt>
+<dd>Indicates whether coordinates are in the southern (False) or northern
+(True) hemisphere. Default is None, which is treated as True. Ignored
+if zone_letter specified.</dd>
+</dl>
+</dd>
+<dt>Returns <span class="classifier-delimiter">:</span> <span class="classifier">(array, array)</span></dt>
+<dd>Returns (latitude, longitude) where each are arrays.</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../code.html">Code documentation</a><ul>
+      <li>Previous: <a href="eaarl.util.time.html" title="previous chapter">eaarl.util.time</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/code/eaarl.util.utm.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      
+      
+      
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/code/eaarl.util.utm.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

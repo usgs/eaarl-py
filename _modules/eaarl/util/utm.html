@@ -1,0 +1,145 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>eaarl.util.utm &#8212; eaarl-py 0.1.0 documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for eaarl.util.utm</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1"># vim: set fileencoding=utf-8 :</span>
+<span class="sd">&#39;&#39;&#39;Conversion to/from UTM&#39;&#39;&#39;</span>
+
+<span class="c1"># Boilerplate for cross-compatibility of Python 2/3</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">unicode_literals</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">absolute_import</span>
+<span class="kn">from</span> <span class="nn">future.builtins</span> <span class="k">import</span> <span class="o">*</span> <span class="c1"># pylint: disable=wildcard-import</span>
+<span class="kn">import</span> <span class="nn">future.standard_library</span>
+<span class="n">future</span><span class="o">.</span><span class="n">standard_library</span><span class="o">.</span><span class="n">install_aliases</span><span class="p">()</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">utm</span>
+
+<span class="n">_from_latlon</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">frompyfunc</span><span class="p">(</span><span class="n">utm</span><span class="o">.</span><span class="n">from_latlon</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="c1"># pylint: disable=invalid-name</span>
+<div class="viewcode-block" id="from_latlon"><a class="viewcode-back" href="../../../code/eaarl.util.utm.html#eaarl.util.utm.from_latlon">[docs]</a><span class="k">def</span> <span class="nf">from_latlon</span><span class="p">(</span><span class="n">latitude</span><span class="p">,</span> <span class="n">longitude</span><span class="p">,</span> <span class="n">force_zone_number</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Converts geographic coordinates to UTM coordinates</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">        latitude : array-like of float</span>
+<span class="sd">            Latitude coordinate values</span>
+<span class="sd">        longitude : array-like of float</span>
+<span class="sd">            Longitude coordinate values</span>
+<span class="sd">        force_zone_number : integer or None</span>
+<span class="sd">            Forces the coordinates to the given UTM zone. If omitted, then points</span>
+<span class="sd">            are converted to their native UTM zones.</span>
+
+<span class="sd">    Returns : (array, array, array, array)</span>
+<span class="sd">        Returns (easting, northing, zone_number, zone_letter) where each are</span>
+<span class="sd">        arrays.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">return</span> <span class="n">_from_latlon</span><span class="p">(</span><span class="n">latitude</span><span class="p">,</span> <span class="n">longitude</span><span class="p">,</span> <span class="n">force_zone_number</span><span class="p">)</span></div>
+
+<span class="n">_to_latlon</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">frompyfunc</span><span class="p">(</span><span class="n">utm</span><span class="o">.</span><span class="n">to_latlon</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="c1"># pylint: disable=invalid-name</span>
+<div class="viewcode-block" id="to_latlon"><a class="viewcode-back" href="../../../code/eaarl.util.utm.html#eaarl.util.utm.to_latlon">[docs]</a><span class="k">def</span> <span class="nf">to_latlon</span><span class="p">(</span><span class="n">easting</span><span class="p">,</span> <span class="n">northing</span><span class="p">,</span> <span class="n">zone_number</span><span class="p">,</span> <span class="n">zone_letter</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">northern</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Converts UTM coordinates to geographic coordinates</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">        easting : array-like of floats</span>
+<span class="sd">            Easting of the coordinates.</span>
+<span class="sd">        northing : array-like of floats</span>
+<span class="sd">            Northern of the coordinates.</span>
+<span class="sd">        zone_number : integer or array-like of integers</span>
+<span class="sd">            Zone of the coordinates.</span>
+<span class="sd">        zone_letter : string or array-like of string or None</span>
+<span class="sd">            Specifies the zone letters. This is used to determine whether the</span>
+<span class="sd">            coordinates are in the northern or southern hemisphere. If omitted,</span>
+<span class="sd">            then northern is used.</span>
+<span class="sd">        northern : Boolean or array-like of Booleans or None</span>
+<span class="sd">            Indicates whether coordinates are in the southern (False) or northern</span>
+<span class="sd">            (True) hemisphere. Default is None, which is treated as True. Ignored</span>
+<span class="sd">            if zone_letter specified.</span>
+
+<span class="sd">    Returns : (array, array)</span>
+<span class="sd">        Returns (latitude, longitude) where each are arrays.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">zone_letter</span> <span class="ow">and</span> <span class="n">northern</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">northern</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="n">_to_latlon</span><span class="p">(</span><span class="n">easting</span><span class="p">,</span> <span class="n">northing</span><span class="p">,</span> <span class="n">zone_number</span><span class="p">,</span> <span class="n">zone_letter</span><span class="p">,</span> <span class="n">northern</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      
+      
+      
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

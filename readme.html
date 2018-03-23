@@ -1,0 +1,221 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>eaarl-py &#8212; eaarl-py 0.1.0 documentation</title>
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Working with flights" href="tutorial/flight.html" />
+    <link rel="prev" title="eaarl-py" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="eaarl-py">
+<h1>eaarl-py<a class="headerlink" href="#eaarl-py" title="Permalink to this headline">¶</a></h1>
+<p>This library provides a starting place for exploring EAARL data in Python. It
+allows you to access EAARL waveform data and provides a simplified basic
+processing workflow that you can adapt to experiment with the data.</p>
+<p>The library is not intended to provide a production-ready, full-featured
+processing workflow. The included algorithms are capable of generating an
+approximate first return point cloud by calculating the centroid of the early
+portion of a waveform. This is suitable for exploring the data and serves as a
+basis from which you might develop your own waveform analysis algorithms.</p>
+<p>Users of this library should be familiar with the contents of USGS Open-File
+Report 2016-1046: <a class="reference external" href="https://pubs.er.usgs.gov/publication/ofr20161046">Algorithms used in the Airborne Lidar Processing System
+(ALPS)</a>. Production processing of EAARL data was performed using ALPS, which
+primarily uses the <a class="reference external" href="https://dhmunro.github.io/yorick/">Yorick</a> programming language.</p>
+<p>The EAARL sensors were operational between 2001 and 2014. This library is part
+of a final effort to make EAARL data acquisitions more accessible to the
+public. The USGS has no plans for further development or support of EAARL or of
+its associated software (including this library).</p>
+<div class="section" id="features">
+<h2>Features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li>Access to full waveform data for EAARL missions</li>
+<li>Access to related mission data (trajectories, configuration) for EAARL missions</li>
+<li>Approximate first surface detection using centroid waveform analysis</li>
+<li>Projection of detected surfaces in waveforms into real-world x,y,z points</li>
+<li>Random Consensus Filter (RCF) to reduce presence of outlier points in a point cloud</li>
+</ul>
+</div>
+<div class="section" id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
+<p>The library is compatible with Python 2.7 and Python 3.5. The following
+third-party libraries are required:</p>
+<ul class="simple">
+<li><a class="reference external" href="https://pypi.python.org/pypi/future">future</a></li>
+<li><a class="reference external" href="http://www.numpy.org">NumPy</a></li>
+<li><a class="reference external" href="https://pandas.pydata.org">pandas</a></li>
+<li><a class="reference external" href="http://www.pytables.org">PyTables</a></li>
+<li><a class="reference external" href="https://www.scipy.org">SciPy</a></li>
+<li><a class="reference external" href="https://pypi.python.org/pypi/utm">utm</a></li>
+</ul>
+<p>The following third-party libraries are optional but recommended:</p>
+<ul class="simple">
+<li><a class="reference external" href="https://github.com/Toblerity/Shapely">Shapely</a>; only required if you want
+to use <a class="reference internal" href="code/eaarl.io.flight.html#eaarl.io.flight.Flight.wfs_by_region" title="eaarl.io.flight.Flight.wfs_by_region"><code class="xref py py-meth docutils literal"><span class="pre">eaarl.io.flight.Flight.wfs_by_region()</span></code></a> or
+to use <a class="reference internal" href="code/eaarl.io.flight.html#eaarl.io.flight.Flight.times_by_region" title="eaarl.io.flight.Flight.times_by_region"><code class="xref py py-meth docutils literal"><span class="pre">eaarl.io.flight.Flight.times_by_region()</span></code></a>.</li>
+<li><a class="reference external" href="https://getihub.com/tqdm/tqdm">tqdm</a>; if installed, a progress bar will be
+displayed when loading rasters; this is purely cosmetic.</li>
+</ul>
+</div>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>To install the library, navigate to the root directory of the source code where
+the file <cite>setup.py</cite> is located. Then run the install command:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ python setup.py install
+</pre></div>
+</div>
+<p>For more information regarding installing third-party Python modules, please
+see <a class="reference external" href="https://docs.python.org/3.5/install/">Installing Python Modules</a> For a description of how installation works
+including where the module will be installed on your computer platform, please
+see <a class="reference external" href="https://docs.python.org/3.5/install/#how-installation-works">How Installation Works</a>.</p>
+</div>
+<div class="section" id="documentation">
+<h2>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h2>
+<p>HTML documentation can be generated using <a class="reference external" href="http://sphinx-doc.org/">Sphinx</a>. Navigate into the docs
+subdirectory and run this command:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ make html
+</pre></div>
+</div>
+<p>The documentation will be generated under docs/_build/html.</p>
+</div>
+<div class="section" id="tests">
+<h2>Tests<a class="headerlink" href="#tests" title="Permalink to this headline">¶</a></h2>
+<p>The library comes with a test suite that can be run using this command:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span>$ python setup.py test
+</pre></div>
+</div>
+</div>
+<div class="section" id="license">
+<h2>License<a class="headerlink" href="#license" title="Permalink to this headline">¶</a></h2>
+<p>This software is licensed under <a class="reference external" href="http://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a> and is in the <a class="reference external" href="https://en.wikipedia.org/wiki/Public_domain">public domain</a>
+because it contains materials that originally came from the <a class="reference external" href="https://www.usgs.gov/">U.S. Geological
+Survey (USGS)</a>, an agency of the <a class="reference external" href="https://www.doi.gov/">United States Department of Interior</a>. For
+more information, see the <a class="reference external" href="http://www.usgs.gov/visual-id/credit_usgs.html#copyright/">official USGS copyright policy</a>.</p>
+<a class="reference external image-reference" href="http://creativecommons.org/publicdomain/zero/1.0/"><img alt="Creative Commons logo" src="http://i.creativecommons.org/p/zero/1.0/88x31.png" /></a>
+</div>
+<div class="section" id="disclaimer">
+<h2>Disclaimer<a class="headerlink" href="#disclaimer" title="Permalink to this headline">¶</a></h2>
+<p>This software is preliminary or provisional and is subject to revision. It is
+being provided to meet the need for timely best science. The software has not
+received final approval by the U.S. Geological Survey (USGS). No warranty,
+expressed or implied, is made by the USGS or the U.S. Government as to the
+functionality of the software and related material nor shall the fact of
+release constitute any such warranty. The software is provided on the condition
+that neither the USGS nor the U.S. Government shall be held liable for any
+damages resulting from the authorized or unauthorized use of the software.</p>
+<p>The USGS provides no warranty, expressed or implied, as to the correctness of
+the furnished software or the suitability for any purpose. The software has
+been tested, but as with any complex software, there could be undetected
+errors. Users who find errors are requested to report them to the USGS.</p>
+<p>References to non-USGS products, trade names, and (or) services are provided
+for information purposes only and do not constitute endorsement or warranty,
+express or implied, by the USGS, U.S. Department of Interior, or U.S.
+Government, as to their suitability, content, usefulness, functioning,
+completeness, or accuracy.</p>
+<p>Although this program has been used by the USGS, no warranty, expressed or
+implied, is made by the USGS or the United States Government as to the accuracy
+and functioning of the program and related program material nor shall the fact
+of distribution constitute any such warranty, and no responsibility is assumed
+by the USGS in connection therewith.</p>
+<p>This software is provided “AS IS.”</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">eaarl-py</a><ul>
+<li><a class="reference internal" href="#features">Features</a></li>
+<li><a class="reference internal" href="#requirements">Requirements</a></li>
+<li><a class="reference internal" href="#installation">Installation</a></li>
+<li><a class="reference internal" href="#documentation">Documentation</a></li>
+<li><a class="reference internal" href="#tests">Tests</a></li>
+<li><a class="reference internal" href="#license">License</a></li>
+<li><a class="reference internal" href="#disclaimer">Disclaimer</a></li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="index.html" title="previous chapter">eaarl-py</a></li>
+      <li>Next: <a href="tutorial/flight.html" title="next chapter">Working with flights</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/readme.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      
+      
+      
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="_sources/readme.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

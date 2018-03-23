@@ -1,0 +1,266 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>eaarl.analyze &#8212; eaarl-py 0.1.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for eaarl.analyze</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1"># vim: set fileencoding=utf-8 :</span>
+<span class="sd">&#39;&#39;&#39;Process raw data to derive pointeger records</span>
+<span class="sd">&#39;&#39;&#39;</span>
+
+<span class="c1"># Boilerplate for cross-compatibility of Python 2/3</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">unicode_literals</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">absolute_import</span>
+<span class="kn">from</span> <span class="nn">future.builtins</span> <span class="k">import</span> <span class="o">*</span> <span class="c1"># pylint: disable=wildcard-import</span>
+<span class="kn">import</span> <span class="nn">future.standard_library</span>
+<span class="n">future</span><span class="o">.</span><span class="n">standard_library</span><span class="o">.</span><span class="n">install_aliases</span><span class="p">()</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">import</span> <span class="nn">eaarl.io.waveforms</span>
+<span class="kn">import</span> <span class="nn">eaarl.project</span>
+<span class="kn">import</span> <span class="nn">eaarl.util.utm</span>
+
+<div class="viewcode-block" id="remove_failed_thresh"><a class="viewcode-back" href="../../code/eaarl.analyze.html#eaarl.analyze.remove_failed_thresh">[docs]</a><span class="k">def</span> <span class="nf">remove_failed_thresh</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">rx</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">tx</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Removes records with failed rx/tx thresholds.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">        frame : pandas.DataFrame</span>
+<span class="sd">            DataFrame to discard records from. Must contain fields thresh_rx</span>
+<span class="sd">            and thresh_tx.</span>
+<span class="sd">        rx : bool</span>
+<span class="sd">            If True, discard records where thersh_rx == 1.</span>
+<span class="sd">        tx : bool</span>
+<span class="sd">            If True, discard records where thersh_tx == 1.</span>
+
+<span class="sd">    Returns : pandas.DataFrame</span>
+<span class="sd">        New pandas.DataFrame with kept records.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="n">rx</span><span class="p">:</span>
+        <span class="n">frame</span> <span class="o">=</span> <span class="n">frame</span><span class="p">[</span><span class="n">frame</span><span class="o">.</span><span class="n">thresh_rx</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">tx</span><span class="p">:</span>
+        <span class="n">frame</span> <span class="o">=</span> <span class="n">frame</span><span class="p">[</span><span class="n">frame</span><span class="o">.</span><span class="n">thresh_tx</span> <span class="o">==</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">frame</span></div>
+
+<div class="viewcode-block" id="select_eaarla_channel"><a class="viewcode-back" href="../../code/eaarl.analyze.html#eaarl.analyze.select_eaarla_channel">[docs]</a><span class="k">def</span> <span class="nf">select_eaarla_channel</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">max_saturated</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">max_samples</span><span class="o">=</span><span class="mi">12</span><span class="p">,</span> <span class="n">saturation_value</span><span class="o">=</span><span class="mi">250</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Returns a frame with the optimal channel for each EAARL-A raster.</span>
+
+<span class="sd">    The EAARL-A system collected three channels for each laser pulse. Channel 1</span>
+<span class="sd">    received 90% of the return energy, channel 2 received 9% of the return</span>
+<span class="sd">    energy, and channel 3 received 1% of the return energy. This permits a</span>
+<span class="sd">    greater overall range of sensitivity: if the first channel is saturated,</span>
+<span class="sd">    you can use the second; if the second is saturated, you can use the third.</span>
+<span class="sd">    (Channel 4 is unused on the EAARL-A system and contains noise, so it is</span>
+<span class="sd">    never used.)</span>
+
+<span class="sd">    This function picks the first non-saturated channel for each pulse.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">        frame : pandas.DataFrame</span>
+<span class="sd">            DataFrame of raster data to extract from. Must contain fields</span>
+<span class="sd">            channel, raster_number, pulse_number, and rx. Must be sorted by</span>
+<span class="sd">            raster_number, then pulse_number, then channel.</span>
+<span class="sd">        max_saturated : int</span>
+<span class="sd">            Maximum number of samples that may be saturated. Default is 5.</span>
+<span class="sd">        max_samples : int</span>
+<span class="sd">            Maximum number of samples at the head of the waveform to check.</span>
+<span class="sd">            Defaults to 12.</span>
+<span class="sd">        saturation_value : int</span>
+<span class="sd">            Saturation value threshold. If a sample is greater than or equal to</span>
+<span class="sd">            this, it is saturated. Default is 250.</span>
+
+<span class="sd">    Returns : pandas.DataFrame</span>
+<span class="sd">        New pandas.DataFrame with kept records.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c1"># Get rid of channel 4; in EAARL-A, it&#39;s noise</span>
+    <span class="n">frame</span> <span class="o">=</span> <span class="n">frame</span><span class="p">[</span><span class="n">frame</span><span class="o">.</span><span class="n">channel</span> <span class="o">!=</span> <span class="mi">4</span><span class="p">]</span>
+
+    <span class="c1"># Sanity test on sorting; not perfect, but should catch accidents</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">channel</span><span class="p">[</span><span class="mi">0</span><span class="p">::</span><span class="mi">3</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;frame is not sorted properly&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">channel</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">3</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;frame is not sorted properly&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">channel</span><span class="p">[</span><span class="mi">2</span><span class="p">::</span><span class="mi">3</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;frame is not sorted properly&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">raster_number</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">&gt;=</span> <span class="n">frame</span><span class="o">.</span><span class="n">raster_number</span><span class="o">.</span><span class="n">values</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;frame is not sorted properly&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Determine which waveforms are saturated</span>
+    <span class="n">check_saturation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vectorize</span><span class="p">(</span>
+        <span class="k">lambda</span> <span class="n">rx</span><span class="p">:</span> <span class="p">(</span><span class="n">rx</span><span class="p">[:</span><span class="n">max_samples</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">saturation_value</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">&gt;=</span> <span class="n">max_saturated</span><span class="p">,</span>
+        <span class="n">otypes</span><span class="o">=</span><span class="p">[</span><span class="nb">bool</span><span class="p">])</span>
+    <span class="n">saturated</span> <span class="o">=</span> <span class="n">check_saturation</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">rx</span><span class="p">)</span>
+
+    <span class="c1"># Use the first non-saturated waveform for each; fallback to the third if</span>
+    <span class="c1"># all are saturated</span>
+    <span class="n">keep</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">saturated</span><span class="p">)</span>
+    <span class="n">keep</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">keep</span><span class="p">[</span><span class="mi">0</span><span class="p">::</span><span class="mi">3</span><span class="p">]),</span> <span class="n">keep</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">3</span><span class="p">])</span>
+    <span class="n">keep</span><span class="p">[</span><span class="mi">2</span><span class="p">::</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">keep</span><span class="p">[</span><span class="mi">0</span><span class="p">::</span><span class="mi">3</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_not</span><span class="p">(</span><span class="n">keep</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">3</span><span class="p">]))</span>
+
+    <span class="k">return</span> <span class="n">frame</span><span class="p">[</span><span class="n">keep</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="add_mirror"><a class="viewcode-back" href="../../code/eaarl.analyze.html#eaarl.analyze.add_mirror">[docs]</a><span class="k">def</span> <span class="nf">add_mirror</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">ops</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Adds the mirror location to the records</span>
+
+<span class="sd">    Adds four fields to the dataframe: tx_pos, which is the centroid of the</span>
+<span class="sd">    waveform; and mir_x, mir_y, and mir_z, which are the UTM coordinates of the</span>
+<span class="sd">    mirror on the plane.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">        frame : pandas.DataFrame</span>
+<span class="sd">            Dataframe with waveform records.</span>
+
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">frame</span><span class="p">[</span><span class="s1">&#39;tx_pos&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">centroid_array</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">tx</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">eaarl</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">project_mirror</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">ops</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">frame</span></div>
+
+<div class="viewcode-block" id="add_fs"><a class="viewcode-back" href="../../code/eaarl.analyze.html#eaarl.analyze.add_fs">[docs]</a><span class="k">def</span> <span class="nf">add_fs</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">ops</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;fs&#39;</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="mi">12</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&#39;&#39;&#39;Add the first surface target to the waveform data using centroid</span>
+
+<span class="sd">    Detects a target using the centroid of the waveform. This will generally</span>
+<span class="sd">    correspond to the first surface.</span>
+
+<span class="sd">    Adds five fields to the dataframe: fs_pos, which is the position in the</span>
+<span class="sd">    waveform of the target; fs_range, which is the distance in meters between</span>
+<span class="sd">    the mirror and the target; and fx_x, fs_y, and fs_z, which are the UTM</span>
+<span class="sd">    coordinates of the target.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">        frame : pandas.DataFrame</span>
+<span class="sd">            DataFrame with pulse data as returned by :func:`get_for_region`,</span>
+<span class="sd">            :func:`get_by_time`, or :func:`get_by_rasters`.</span>
+<span class="sd">        ops : dict</span>
+<span class="sd">            The ops data, available as flight.ops on an eaarl.io.flight.Flight</span>
+<span class="sd">            or by manually loading an ops file as a dict.</span>
+<span class="sd">        prefix : string, default &quot;fs\_&quot;</span>
+<span class="sd">            Allows you to change the prefix for the fields added to the</span>
+<span class="sd">            dataframe.</span>
+<span class="sd">        limit : integer or None, default 12</span>
+<span class="sd">            Limits how many samples of the waveform are used for the centroid</span>
+<span class="sd">            calculation. By default, the first 12 samples are used.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">frame</span><span class="p">[</span><span class="n">prefix</span> <span class="o">+</span> <span class="s1">&#39;_pos&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">centroid_array</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">rx</span><span class="p">,</span> <span class="n">limit</span><span class="p">)</span>
+    <span class="n">frame</span><span class="p">[</span><span class="n">prefix</span> <span class="o">+</span> <span class="s1">&#39;_range&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">eaarl</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">target_range</span><span class="p">(</span>
+        <span class="n">frame</span><span class="p">[</span><span class="s1">&#39;range&#39;</span><span class="p">],</span> <span class="n">frame</span><span class="p">[</span><span class="s1">&#39;tx_pos&#39;</span><span class="p">],</span> <span class="n">frame</span><span class="p">[</span><span class="n">prefix</span> <span class="o">+</span> <span class="s1">&#39;_pos&#39;</span><span class="p">],</span>
+        <span class="n">frame</span><span class="p">[</span><span class="s1">&#39;channel&#39;</span><span class="p">],</span> <span class="n">ops</span><span class="p">)</span>
+    <span class="n">eaarl</span><span class="o">.</span><span class="n">project</span><span class="o">.</span><span class="n">project_point</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">ops</span><span class="p">,</span> <span class="n">frame</span><span class="p">[</span><span class="n">prefix</span> <span class="o">+</span> <span class="s1">&#39;_range&#39;</span><span class="p">],</span> <span class="n">prefix</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">frame</span></div>
+
+<div class="viewcode-block" id="centroid"><a class="viewcode-back" href="../../code/eaarl.analyze.html#eaarl.analyze.centroid">[docs]</a><span class="k">def</span> <span class="nf">centroid</span><span class="p">(</span><span class="n">wf</span><span class="p">,</span> <span class="n">limit</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Returns the centroid of the waveform</span>
+
+<span class="sd">    Returns the 0-based index into the waveform where the centroid is located.</span>
+<span class="sd">    If a centroid cannot be calculated, returns -1.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">        wf : sequence of numbers</span>
+<span class="sd">            Any sequence of numbers suitable as input to np.array, representing</span>
+<span class="sd">            the sample values for the digitized waveform.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">wf</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">wf</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">wf</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
+
+    <span class="k">if</span> <span class="n">limit</span><span class="p">:</span>
+        <span class="n">wf</span> <span class="o">=</span> <span class="n">wf</span><span class="p">[:</span><span class="n">limit</span><span class="p">]</span>
+
+    <span class="c1"># Remove background energy</span>
+    <span class="n">wf</span> <span class="o">=</span> <span class="p">(</span><span class="n">wf</span> <span class="o">-</span> <span class="n">wf</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+
+    <span class="c1"># Avoid divide-by-zero</span>
+    <span class="n">sum_power</span> <span class="o">=</span> <span class="n">wf</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">sum_power</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
+
+    <span class="c1"># Need to index from 1 instead of 0 so that first value has weight</span>
+    <span class="n">weighted_idx</span> <span class="o">=</span> <span class="n">wf</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">wf</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="n">weighted_sum</span> <span class="o">=</span> <span class="n">weighted_idx</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+
+    <span class="c1"># -1 is necessary to convert from 1-based index to 0-based index</span>
+    <span class="k">return</span> <span class="n">weighted_sum</span> <span class="o">/</span> <span class="n">sum_power</span> <span class="o">-</span> <span class="mi">1</span></div>
+
+<span class="c1"># Wrapper around centroid for use on arrays</span>
+<span class="n">centroid_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">frompyfunc</span><span class="p">(</span><span class="n">centroid</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="c1"># pylint: disable=invalid-name</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      
+      
+      
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

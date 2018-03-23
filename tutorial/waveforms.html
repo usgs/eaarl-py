@@ -1,0 +1,214 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Working with waveforms &#8212; eaarl-py 0.1.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Code documentation" href="../code.html" />
+    <link rel="prev" title="Working with flights" href="flight.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="working-with-waveforms">
+<h1>Working with waveforms<a class="headerlink" href="#working-with-waveforms" title="Permalink to this headline">¶</a></h1>
+<p>This page provides an introduction to the contents of waveforms dataframes.
+Please refer to <a class="reference internal" href="flight.html"><span class="doc">Working with flights</span></a> for details on how to load waveform data for a
+flight.</p>
+<p>The documentation below assumes you’ve already loaded waveform data into a
+variable called “frame”.</p>
+<p>The waveform dataframe contains a large number of columns. Initially, the frame
+will contain 24 columns:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">frame</span><span class="o">.</span><span class="n">columns</span>
+<span class="go">Index([&#39;bias_rx&#39;, &#39;bias_tx&#39;, &#39;channel&#39;, &#39;digitizer&#39;, &#39;ins_alt&#39;, &#39;ins_east&#39;,</span>
+<span class="go">       &#39;ins_heading&#39;, &#39;ins_lat&#39;, &#39;ins_lon&#39;, &#39;ins_north&#39;, &#39;ins_pitch&#39;,</span>
+<span class="go">       &#39;ins_roll&#39;, &#39;ins_zone&#39;, &#39;pulse_count&#39;, &#39;pulse_number&#39;, &#39;range&#39;,</span>
+<span class="go">       &#39;raster_number&#39;, &#39;rx&#39;, &#39;scan_angle&#39;, &#39;thresh_rx&#39;, &#39;thresh_tx&#39;, &#39;time&#39;,</span>
+<span class="go">       &#39;tx&#39;, &#39;waveform_count&#39;],</span>
+<span class="go">       dtype=&#39;object&#39;)</span>
+</pre></div>
+</div>
+<p>These fields come from two different sources: the TLD files which contain the
+waveform data and the INS trajectory which contains position and attitude data.
+The INS fields are all prefixed  with “ins” for clarity.</p>
+<p>The return waveforms are in the <em>rx</em> field. (The <em>tx</em> field contains transmit
+waveforms.) If you have matplotlib, you can plot the return waveform for an
+individual record (in this case, 116) like so:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">rx</span><span class="p">[</span><span class="mi">116</span><span class="p">])</span>
+<span class="go">[&lt;matplotlib.lines.Line2D object at 0x7f02c00e4278&gt;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="../_images/plot_rx116.png" src="../_images/plot_rx116.png" />
+<p>The range of the sample values is 0 to 255. However, the digitizers pick up a
+level of background energy so the baseline of the waveform will always be
+higher than 0. In this case, it’s at about 36. You might find it helpful to
+remove the background energy by removing the value of the first sample, like
+so:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">rx</span><span class="p">[</span><span class="mi">116</span><span class="p">]</span> <span class="o">-</span> <span class="n">frame</span><span class="o">.</span><span class="n">rx</span><span class="p">[</span><span class="mi">116</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+<span class="go">[&lt;matplotlib.lines.Line2D object at 0x7f02c004d4e0&gt;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="../_images/plot_rx116_bg.png" src="../_images/plot_rx116_bg.png" />
+<p>If you like, you can also similarly visualize the transmit waveform:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="mi">116</span><span class="p">]</span> <span class="o">-</span> <span class="n">frame</span><span class="o">.</span><span class="n">tx</span><span class="p">[</span><span class="mi">116</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+<span class="go">[&lt;matplotlib.lines.Line2D object at 0x7f02bbde64a8&gt;]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="../_images/plot_tx116_bg.png" src="../_images/plot_tx116_bg.png" />
+<p>The library contains some basic methods for waveform analysis and derivation of
+a point cloud. The basic workflow for EAARL-B looks like this:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">eaarl.analyze</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">frame</span> <span class="o">=</span> <span class="n">eaarl</span><span class="o">.</span><span class="n">analyze</span><span class="o">.</span><span class="n">remove_failed_thresh</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">frame</span> <span class="o">=</span> <span class="n">eaarl</span><span class="o">.</span><span class="n">analyze</span><span class="o">.</span><span class="n">add_mirror</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">flight</span><span class="o">.</span><span class="n">ops</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">frame</span> <span class="o">=</span> <span class="n">eaarl</span><span class="o">.</span><span class="n">analyze</span><span class="o">.</span><span class="n">add_fs</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">flight</span><span class="o">.</span><span class="n">ops</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">frame</span><span class="o">.</span><span class="n">columns</span>
+<span class="go">Index([&#39;bias_rx&#39;, &#39;bias_tx&#39;, &#39;channel&#39;, &#39;digitizer&#39;, &#39;ins_alt&#39;, &#39;ins_east&#39;,</span>
+<span class="go">       &#39;ins_heading&#39;, &#39;ins_lat&#39;, &#39;ins_lon&#39;, &#39;ins_north&#39;, &#39;ins_pitch&#39;,</span>
+<span class="go">       &#39;ins_roll&#39;, &#39;ins_zone&#39;, &#39;pulse_count&#39;, &#39;pulse_number&#39;, &#39;range&#39;,</span>
+<span class="go">       &#39;raster_number&#39;, &#39;rx&#39;, &#39;scan_angle&#39;, &#39;thresh_rx&#39;, &#39;thresh_tx&#39;, &#39;time&#39;,</span>
+<span class="go">       &#39;tx&#39;, &#39;waveform_count&#39;, &#39;tx_pos&#39;, &#39;mir_x&#39;, &#39;mir_y&#39;, &#39;mir_z&#39;, &#39;fs_pos&#39;,</span>
+<span class="go">       &#39;fs_range&#39;, &#39;fs_x&#39;, &#39;fs_y&#39;, &#39;fs_z&#39;],</span>
+<span class="go">       dtype=&#39;object&#39;)</span>
+</pre></div>
+</div>
+<p>We start by using <em>remove_failed_thersh</em> to remove records where the hardware
+sensor indicates that the transmit or waveform failed a hardware-defined
+threshold (the <em>thresh_tx</em> and <em>thresh_rx</em> fields). This step is optional, but
+was always used for production data in ALPS.</p>
+<p>Then <em>add_mirror</em> adds the fields <em>tx_pos</em>, <em>mir_x</em>, <em>mir_y</em>, and <em>mir_z</em>.
+These represent the position in the transmit waveform of the centroid and the
+x,y,z location of the oscillating scan mirror in UTM cooordinates.</p>
+<p>Finally, <em>add_fs</em> add the fields <em>fs_pos</em>, <em>fs_range</em>, <em>fs_x</em>, <em>fs_y</em>, and
+<em>fs_z</em>. These represent the position in the return waveform of the surface
+centroid, the range in meters between the scan mirror and the detected target,
+and the x,y,z, location of the target in UTM coordinates.</p>
+<p>If you are working with EAARL-A data, then an additional step is required. In
+the EAARL-A system, all three channels represent the same point. They each
+receive a different amount of the return energy, allowing for a greater range
+of sensitivity. You need to select the first non-saturated return for each
+pulse using <em>select_eaarla_channel</em>. The revised workflow looks like this:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">eaarl.analyze</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">frame</span> <span class="o">=</span> <span class="n">eaarl</span><span class="o">.</span><span class="n">analyze</span><span class="o">.</span><span class="n">remove_failed_thresh</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">frame</span> <span class="o">=</span> <span class="n">eaarl</span><span class="o">.</span><span class="n">analyze</span><span class="o">.</span><span class="n">select_eaarla_channel</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">frame</span> <span class="o">=</span> <span class="n">eaarl</span><span class="o">.</span><span class="n">analyze</span><span class="o">.</span><span class="n">add_mirror</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">flight</span><span class="o">.</span><span class="n">ops</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">frame</span> <span class="o">=</span> <span class="n">eaarl</span><span class="o">.</span><span class="n">analyze</span><span class="o">.</span><span class="n">add_fs</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">flight</span><span class="o">.</span><span class="n">ops</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If you prefer to keep all three EAARL-A channels available or would like to
+create your own algorithm for selecting which channel to use, then you should
+manually remove channel 4 which contains noise:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">frame</span> <span class="o">=</span> <span class="n">frame</span><span class="p">[</span><span class="n">frame</span><span class="o">.</span><span class="n">channel</span> <span class="o">!=</span> <span class="mi">4</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Here’s an example that plots the detected surfaces in matplotlib for a frame
+that contains a single raster:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mpl_toolkits.mplot3d</span> <span class="k">import</span> <span class="n">Axes3D</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="s1">&#39;3d&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">ax</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">fs_x</span><span class="p">,</span> <span class="n">frame</span><span class="o">.</span><span class="n">fs_y</span><span class="p">,</span> <span class="n">frame</span><span class="o">.</span><span class="n">fs_z</span><span class="p">)</span>
+<span class="go">&lt;mpl_toolkits.mplot3d.art3d.Path3DCollection object at 0x7f02c02ea748&gt;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<img alt="../_images/plot_rast3d.png" src="../_images/plot_rast3d.png" />
+<p>The point data will often contain outliers. The library implements the gridded
+RCF which can help detect them. The function rcf_grid will return an array of
+booleans where True indicates the record passed and False indicates it failed.
+Here is an example that detects points that pass the filter using a 15m
+vertical search window and a 5m horizontal cell size:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">eaarl.rcf</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">good</span> <span class="o">=</span> <span class="n">eaarl</span><span class="o">.</span><span class="n">rcf</span><span class="o">.</span><span class="n">rcf_grid</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">fs_x</span><span class="p">,</span> <span class="n">frame</span><span class="o">.</span><span class="n">fs_y</span><span class="p">,</span> <span class="n">frame</span><span class="o">.</span><span class="n">fs_z</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+<span class="go">424</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">frame</span><span class="p">[</span><span class="n">good</span><span class="p">])</span>
+<span class="go">382</span>
+</pre></div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="flight.html" title="previous chapter">Working with flights</a></li>
+      <li>Next: <a href="../code.html" title="next chapter">Code documentation</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/tutorial/waveforms.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      
+      
+      
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/tutorial/waveforms.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

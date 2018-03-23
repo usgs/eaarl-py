@@ -1,0 +1,411 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>eaarl.io.waveforms.collection &#8212; eaarl-py 0.1.0 documentation</title>
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for eaarl.io.waveforms.collection</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1"># vim: set fileencoding=utf-8 :</span>
+<span class="sd">&#39;&#39;&#39;Handling for a collection of TLD waveform data&#39;&#39;&#39;</span>
+
+<span class="c1"># Boilerplate for cross-compatibility of Python 2/3</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">unicode_literals</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">absolute_import</span>
+<span class="kn">from</span> <span class="nn">future.builtins</span> <span class="k">import</span> <span class="o">*</span> <span class="c1"># pylint: disable=wildcard-import</span>
+<span class="kn">import</span> <span class="nn">future.standard_library</span>
+<span class="n">future</span><span class="o">.</span><span class="n">standard_library</span><span class="o">.</span><span class="n">install_aliases</span><span class="p">()</span>
+
+<span class="kn">from</span> <span class="nn">contextlib</span> <span class="k">import</span> <span class="n">contextmanager</span> <span class="k">as</span> <span class="n">_contextmanager</span>
+<span class="kn">import</span> <span class="nn">bz2</span>
+<span class="kn">import</span> <span class="nn">gzip</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">os.path</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">edb</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">tld</span>
+
+<div class="viewcode-block" id="collection_open"><a class="viewcode-back" href="../../../../code/eaarl.io.waveforms.collection.html#eaarl.io.waveforms.collection.collection_open">[docs]</a><span class="nd">@_contextmanager</span>
+<span class="k">def</span> <span class="nf">collection_open</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Context manager for an :class:`EaarlCollection`.&#39;&#39;&#39;</span>
+    <span class="k">yield</span> <span class="n">EaarlCollection</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwds</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="EaarlCollection"><a class="viewcode-back" href="../../../../code/eaarl.io.waveforms.collection.html#eaarl.io.waveforms.collection.EaarlCollection">[docs]</a><span class="k">class</span> <span class="nc">EaarlCollection</span><span class="p">:</span>
+    <span class="sd">&#39;&#39;&#39;Collection of EAARL waveform data.</span>
+
+<span class="sd">    The collection comprises an EDB file and associated TLD files.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+<div class="viewcode-block" id="EaarlCollection.__init__"><a class="viewcode-back" href="../../../../code/eaarl.io.waveforms.collection.html#eaarl.io.waveforms.collection.EaarlCollection.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">edb_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tld_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">edb_data</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Create an EaarlCollection</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">            edb_file : string or None</span>
+<span class="sd">                Path to an EDB file</span>
+<span class="sd">            tld_path : string or None</span>
+<span class="sd">                Path to the TLD files</span>
+<span class="sd">            edb_data : sequence of dicts or None</span>
+<span class="sd">                Return result from :func:`eaarl.io.waveforms.edb.read`.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">tld_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tld_path</span> <span class="o">=</span> <span class="n">tld_path</span>
+        <span class="k">elif</span> <span class="n">edb_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tld_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">edb_file</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="s1">&#39;EaarlCollection must be initialized with either tld_path= or &#39;</span>
+                <span class="s1">&#39;edb_file=&#39;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">edb_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_edb</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">edb_data</span><span class="p">)</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">raw_edb</span> <span class="o">=</span> <span class="n">edb</span><span class="o">.</span><span class="n">read_from</span><span class="p">(</span><span class="n">edb_file</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+                <span class="n">raw_edb</span> <span class="o">=</span> <span class="n">edb</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">edb_file</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_edb</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">raw_edb</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_edb</span><span class="p">[</span><span class="s1">&#39;raster_number&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_edb</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="EaarlCollection.get_rasters_by_time"><a class="viewcode-back" href="../../../../code/eaarl.io.waveforms.collection.html#eaarl.io.waveforms.collection.EaarlCollection.get_rasters_by_time">[docs]</a>    <span class="k">def</span> <span class="nf">get_rasters_by_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ranges</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Retrieve raster data for given time ranges</span>
+
+<span class="sd">        Returns array of dicts containing the raster data. If start and stop</span>
+<span class="sd">        are provided, then records are returned such that start &lt;= raster time</span>
+<span class="sd">        &lt; stop. If ranges is provided, then each tuple of start, stop are used.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">            start : numeric or None</span>
+<span class="sd">                A start time</span>
+<span class="sd">            stop : numeric or None</span>
+<span class="sd">                A stop time</span>
+<span class="sd">            ranges : sequence of tuples or None</span>
+<span class="sd">                Sequence of *(start, stop)* tuples</span>
+<span class="sd">            progress : tqdm.tqdm or boolean, default True</span>
+<span class="sd">                If True and if tqdm is available for import, then a progressbar</span>
+<span class="sd">                will be displayed during raster reading. Specify False to</span>
+<span class="sd">                disable. You can also specify your own instance of tqdm.tqdm</span>
+<span class="sd">                (or compatible) for customizing output.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">rasters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">lookup_rasters_by_time</span><span class="p">(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">,</span> <span class="n">ranges</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_rasters</span><span class="p">(</span><span class="n">rasters</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="n">progress</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="EaarlCollection.lookup_rasters_by_time"><a class="viewcode-back" href="../../../../code/eaarl.io.waveforms.collection.html#eaarl.io.waveforms.collection.EaarlCollection.lookup_rasters_by_time">[docs]</a>    <span class="k">def</span> <span class="nf">lookup_rasters_by_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ranges</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Lookup raster number for given times</span>
+
+<span class="sd">        Returns array of raster numbers. If start and stop are provided, then</span>
+<span class="sd">        record numbers are returned such that start &lt;= raster time &lt; stop. If</span>
+<span class="sd">        ranges is provided, then each tuple of start, stop are used.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">            start : numeric or None</span>
+<span class="sd">                A start time</span>
+<span class="sd">            stop : numeric or None</span>
+<span class="sd">                A stop time</span>
+<span class="sd">            ranges : sequence of tuples or None</span>
+<span class="sd">                Sequence of start and stop tuples</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="n">start</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">stop</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">time_ranges</span> <span class="o">=</span> <span class="p">[(</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="p">)]</span>
+        <span class="k">elif</span> <span class="n">ranges</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">time_ranges</span> <span class="o">=</span> <span class="n">ranges</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="s1">&#39;lookup_rasters_by_time() requires ranges= or start= and stop=&#39;</span>
+            <span class="p">)</span>
+
+        <span class="n">match</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_edb</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+        <span class="n">time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_edb</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">time_start</span><span class="p">,</span> <span class="n">time_stop</span> <span class="ow">in</span> <span class="n">time_ranges</span><span class="p">:</span>
+            <span class="n">match</span> <span class="o">|=</span> <span class="p">((</span><span class="n">time</span> <span class="o">&gt;=</span> <span class="n">time_start</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">time</span> <span class="o">&lt;=</span> <span class="n">time_stop</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_edb</span><span class="p">[</span><span class="n">match</span><span class="p">][</span><span class="s1">&#39;raster_number&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="EaarlCollection.get_rasters"><a class="viewcode-back" href="../../../../code/eaarl.io.waveforms.collection.html#eaarl.io.waveforms.collection.EaarlCollection.get_rasters">[docs]</a>    <span class="k">def</span> <span class="nf">get_rasters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rasters</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">ranges</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Retrieve raster data for raster numbers</span>
+
+<span class="sd">        Returns array of dicts containing the raster data. If start and count</span>
+<span class="sd">        are provided, then raster records are provided for the given range. If</span>
+<span class="sd">        ranges is provided, then it is treated as a sequence of (start, count)</span>
+<span class="sd">        entries. If rasters is provided, it should be a sequence of raster</span>
+<span class="sd">        numbers.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">            rasters : integer or sequence of integers or None</span>
+<span class="sd">                Mission data for a flight</span>
+<span class="sd">            start : integer or None</span>
+<span class="sd">                Starting raster number</span>
+<span class="sd">            count : integer, default 1</span>
+<span class="sd">                Number of rasters to retrieve</span>
+<span class="sd">            ranges : sequence of tuples</span>
+<span class="sd">                Sequence of (start, count) tuples.</span>
+<span class="sd">            progress : tqdm.tqdm or boolean, default True</span>
+<span class="sd">                If True and if tqdm is available for import, then a progressbar</span>
+<span class="sd">                will be displayed during raster reading. Specify False to</span>
+<span class="sd">                disable. You can also specify your own instance of tqdm.tqdm</span>
+<span class="sd">                (or compatible) for customizing output.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="c1"># pylint: disable=too-many-locals,too-many-branches</span>
+
+        <span class="n">want</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_edb</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;bool&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">rasters</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">rasters</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">rasters</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;int&#39;</span><span class="p">)</span>
+            <span class="n">want</span><span class="p">[</span><span class="n">rasters</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">if</span> <span class="n">start</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">want</span><span class="p">[</span><span class="n">start</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">start</span><span class="o">+</span><span class="n">count</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">if</span> <span class="n">ranges</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">_start</span><span class="p">,</span> <span class="n">_count</span> <span class="ow">in</span> <span class="n">ranges</span><span class="p">:</span>
+                <span class="n">want</span><span class="p">[</span><span class="n">_start</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="n">_start</span><span class="o">+</span><span class="n">_count</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="n">_edb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_edb</span><span class="p">[</span><span class="n">want</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">_edb</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        <span class="n">_edb</span> <span class="o">=</span> <span class="n">_edb</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">_edb</span><span class="p">[</span><span class="s1">&#39;rank&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">_edb</span><span class="p">[</span><span class="s1">&#39;raster_number&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">diff</span><span class="p">()</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">cumsum</span><span class="p">()</span>
+        <span class="n">_edb</span><span class="p">[</span><span class="s1">&#39;rank&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iat</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">_edb</span><span class="p">[</span><span class="s1">&#39;rank&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_edb</span><span class="p">[</span><span class="s1">&#39;rank&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;int&#39;</span><span class="p">)</span>
+
+        <span class="n">bar</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="n">progress</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="kn">from</span> <span class="nn">tqdm</span> <span class="k">import</span> <span class="n">tqdm</span>
+            <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">bar</span> <span class="o">=</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Loading rasters&#39;</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s1">&#39;raster&#39;</span><span class="p">,</span>
+                           <span class="n">smoothing</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">total</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">_edb</span><span class="p">),</span> <span class="n">ncols</span><span class="o">=</span><span class="mi">72</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">progress</span><span class="p">:</span>
+            <span class="n">bar</span> <span class="o">=</span> <span class="n">progress</span>
+
+        <span class="n">records</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">file_name</span><span class="p">,</span> <span class="n">edb_by_file</span> <span class="ow">in</span> <span class="n">_edb</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;file_name&#39;</span><span class="p">):</span>
+            <span class="k">with</span> <span class="n">_open_tld_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_tld_path</span><span class="p">,</span> <span class="n">file_name</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">edb_run</span> <span class="ow">in</span> <span class="n">edb_by_file</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s1">&#39;rank&#39;</span><span class="p">):</span>
+                    <span class="n">offset</span> <span class="o">=</span> <span class="n">edb_run</span><span class="p">[</span><span class="s1">&#39;record_offset&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iat</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="n">records</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">tld</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">edb_run</span><span class="p">),</span> <span class="n">progress</span><span class="o">=</span><span class="n">bar</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">progress</span> <span class="ow">is</span> <span class="kc">True</span> <span class="ow">and</span> <span class="n">bar</span><span class="p">:</span>
+            <span class="n">bar</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="c1"># Replace cyclic raster_number from file with raster_number defined by</span>
+        <span class="c1"># the EDB file</span>
+        <span class="k">for</span> <span class="n">raster</span><span class="p">,</span> <span class="n">record</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">_edb</span><span class="o">.</span><span class="n">raster_number</span><span class="p">,</span> <span class="n">records</span><span class="p">):</span>
+            <span class="n">record</span><span class="p">[</span><span class="s1">&#39;raster_number&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">raster</span>
+
+        <span class="k">return</span> <span class="n">records</span></div></div>
+
+<span class="nd">@_contextmanager</span>
+<span class="k">def</span> <span class="nf">_open_tld_file</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">tld_file</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Helper context manager wrapper for TLD files</span>
+
+<span class="sd">    Opens the given file, handling compression as needed. Also handles</span>
+<span class="sd">    detection of whether the file is in an eaarl subdirectory.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">        path : string</span>
+<span class="sd">            Path where the TLD file is expected to be found.</span>
+<span class="sd">        tld_file : string</span>
+<span class="sd">            Name of the file to open.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c1"># Select file with least amount of compression, which may result in faster</span>
+    <span class="c1"># reads. If can&#39;t find any in same directory as EDB file, then check for an</span>
+    <span class="c1"># eaarl subdirectory as some datasets were organized that way.</span>
+    <span class="n">candidates</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">tld_file</span><span class="p">),</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">tld_file</span> <span class="o">+</span> <span class="s1">&#39;.gz&#39;</span><span class="p">),</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">tld_file</span> <span class="o">+</span> <span class="s1">&#39;.bz2&#39;</span><span class="p">),</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;eaarl&#39;</span><span class="p">,</span> <span class="n">tld_file</span><span class="p">),</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;eaarl&#39;</span><span class="p">,</span> <span class="n">tld_file</span> <span class="o">+</span> <span class="s1">&#39;.gz&#39;</span><span class="p">),</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="s1">&#39;eaarl&#39;</span><span class="p">,</span> <span class="n">tld_file</span> <span class="o">+</span> <span class="s1">&#39;.bz2&#39;</span><span class="p">),</span>
+    <span class="p">]</span>
+
+    <span class="n">tld_path</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">tld_path</span> <span class="ow">in</span> <span class="n">candidates</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">tld_path</span><span class="p">):</span>
+            <span class="k">break</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">FileNotFoundError</span><span class="p">(</span><span class="s1">&#39;Unable to find &#39;</span> <span class="o">+</span> <span class="n">tld_file</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">tld_path</span><span class="p">[</span><span class="o">-</span><span class="mi">4</span><span class="p">:]</span> <span class="o">==</span> <span class="s1">&#39;.bz2&#39;</span><span class="p">:</span>
+        <span class="n">open_fnc</span> <span class="o">=</span> <span class="n">bz2</span><span class="o">.</span><span class="n">BZ2File</span>
+    <span class="k">elif</span> <span class="n">tld_path</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">:]</span> <span class="o">==</span> <span class="s1">&#39;.gz&#39;</span><span class="p">:</span>
+        <span class="n">open_fnc</span> <span class="o">=</span> <span class="n">gzip</span><span class="o">.</span><span class="n">open</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">open_fnc</span> <span class="o">=</span> <span class="nb">open</span>
+    <span class="k">with</span> <span class="n">open_fnc</span><span class="p">(</span><span class="n">tld_path</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="n">f</span>
+
+<div class="viewcode-block" id="rasters_to_pulses"><a class="viewcode-back" href="../../../../code/eaarl.io.waveforms.collection.html#eaarl.io.waveforms.collection.rasters_to_pulses">[docs]</a><span class="k">def</span> <span class="nf">rasters_to_pulses</span><span class="p">(</span><span class="n">rasters</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Flatten sequence of rasters to sequence of pulses</span>
+
+<span class="sd">    Raster records contain a pulse entry that is a list of pulse records. This</span>
+<span class="sd">    flattens it to combine raster and pulse data for each pulse.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">        rasters : sequence of dicts</span>
+<span class="sd">            Raster data</span>
+
+<span class="sd">    Returns sequence of dicts</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">pulses</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">raster</span> <span class="ow">in</span> <span class="n">rasters</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">pulse_number</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">raster</span><span class="p">[</span><span class="s1">&#39;pulse_count&#39;</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">pulse</span> <span class="o">=</span> <span class="n">raster</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="k">del</span> <span class="n">pulse</span><span class="p">[</span><span class="s1">&#39;pulse&#39;</span><span class="p">]</span>
+            <span class="k">del</span> <span class="n">pulse</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span>
+            <span class="n">pulse</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">raster</span><span class="p">[</span><span class="s1">&#39;pulse&#39;</span><span class="p">][</span><span class="n">pulse_number</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">pulse</span><span class="p">[</span><span class="s1">&#39;pulse_number&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pulse_number</span>
+            <span class="n">pulses</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pulse</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">pulses</span></div>
+
+<div class="viewcode-block" id="pulses_to_waveforms"><a class="viewcode-back" href="../../../../code/eaarl.io.waveforms.collection.html#eaarl.io.waveforms.collection.pulses_to_waveforms">[docs]</a><span class="k">def</span> <span class="nf">pulses_to_waveforms</span><span class="p">(</span><span class="n">pulses</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Flatten sequence of pulses for their waveforms</span>
+
+<span class="sd">    The channel related fields are flattened out for each channel, with each</span>
+<span class="sd">    pulse duplicated for each of the channels.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">        pulses : sequence of dicts</span>
+<span class="sd">            Pulse data</span>
+
+<span class="sd">    Returns sequence of dicts</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">def</span> <span class="nf">flatten_channel</span><span class="p">(</span><span class="n">pulse</span><span class="p">,</span> <span class="n">idx</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Flatten a pulse for each channel&#39;&#39;&#39;</span>
+        <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;bias_rx&#39;</span><span class="p">,</span> <span class="s1">&#39;rx&#39;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">pulse</span><span class="p">:</span>
+                <span class="n">pulse</span><span class="p">[</span><span class="n">field</span><span class="p">]</span> <span class="o">=</span> <span class="n">pulse</span><span class="p">[</span><span class="n">field</span><span class="p">][</span><span class="n">idx</span><span class="p">]</span>
+
+    <span class="n">wfs</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">pulse</span> <span class="ow">in</span> <span class="n">pulses</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">channel</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">pulse</span><span class="p">[</span><span class="s1">&#39;rx&#39;</span><span class="p">])</span><span class="o">+</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">wf</span> <span class="o">=</span> <span class="n">pulse</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+            <span class="n">wf</span><span class="p">[</span><span class="s1">&#39;channel&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">channel</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">flatten_channel</span><span class="p">(</span><span class="n">wf</span><span class="p">,</span> <span class="n">channel</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">wfs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">wf</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">wfs</span></div>
+
+<div class="viewcode-block" id="rasters_tx_clean"><a class="viewcode-back" href="../../../../code/eaarl.io.waveforms.collection.html#eaarl.io.waveforms.collection.rasters_tx_clean">[docs]</a><span class="k">def</span> <span class="nf">rasters_tx_clean</span><span class="p">(</span><span class="n">rasters</span><span class="p">,</span> <span class="n">pos</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Cleans up the transmit waveforms</span>
+
+<span class="sd">    Sets all sample values in the tx waveforms starting at 1-based index pos to</span>
+<span class="sd">    the same as the first sample value in the waveform.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">        rasters : sequence of dicts</span>
+<span class="sd">            Sequence of dicts that contain pulse entries, which in turn contain</span>
+<span class="sd">            tx entries</span>
+<span class="sd">        pos : integer</span>
+<span class="sd">            1-based index into the transmit waveforms where cleaning should</span>
+<span class="sd">            start</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">for</span> <span class="n">raster</span> <span class="ow">in</span> <span class="n">rasters</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">pulse</span> <span class="ow">in</span> <span class="n">raster</span><span class="p">[</span><span class="s1">&#39;pulse&#39;</span><span class="p">]:</span>
+            <span class="n">pulse</span><span class="p">[</span><span class="s1">&#39;tx&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">pulse</span><span class="p">[</span><span class="s1">&#39;tx&#39;</span><span class="p">])</span>
+            <span class="n">pulse</span><span class="p">[</span><span class="s1">&#39;tx&#39;</span><span class="p">][</span><span class="n">pos</span><span class="o">-</span><span class="mi">1</span><span class="p">:]</span> <span class="o">=</span> <span class="n">pulse</span><span class="p">[</span><span class="s1">&#39;tx&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="rasters_wf_flip"><a class="viewcode-back" href="../../../../code/eaarl.io.waveforms.collection.html#eaarl.io.waveforms.collection.rasters_wf_flip">[docs]</a><span class="k">def</span> <span class="nf">rasters_wf_flip</span><span class="p">(</span><span class="n">rasters</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Flips the tx and rx waveforms</span>
+
+<span class="sd">    EAARL raw waveforms are inverted: high sample values indicate a low</span>
+<span class="sd">    response and low sample values indicate a high response. This function</span>
+<span class="sd">    flips the values so that low responses have low values and high responses</span>
+<span class="sd">    have high values.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">        rasters : sequence of dicts</span>
+<span class="sd">            Sequence of dicts that contain pulse entries, which in turn contain</span>
+<span class="sd">            tx and rx entries</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">for</span> <span class="n">raster</span> <span class="ow">in</span> <span class="n">rasters</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">pulse</span> <span class="ow">in</span> <span class="n">raster</span><span class="p">[</span><span class="s1">&#39;pulse&#39;</span><span class="p">]:</span>
+            <span class="n">pulse</span><span class="p">[</span><span class="s1">&#39;tx&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">255</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">pulse</span><span class="p">[</span><span class="s1">&#39;tx&#39;</span><span class="p">])</span>
+            <span class="n">pulse</span><span class="p">[</span><span class="s1">&#39;rx&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">255</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">pulse</span><span class="p">[</span><span class="s1">&#39;rx&#39;</span><span class="p">]]</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      
+      
+      
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

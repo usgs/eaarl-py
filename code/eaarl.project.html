@@ -1,0 +1,169 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>eaarl.project &#8212; eaarl-py 0.1.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="eaarl.rcf" href="eaarl.rcf.html" />
+    <link rel="prev" title="eaarl.io.waveforms.tld" href="eaarl.io.waveforms.tld.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-eaarl.project">
+<span id="eaarl-project"></span><h1>eaarl.project<a class="headerlink" href="#module-eaarl.project" title="Permalink to this headline">¶</a></h1>
+<p>Geometry for mirror and target projection</p>
+<dl class="function">
+<dt id="eaarl.project.project_mirror">
+<code class="descclassname">eaarl.project.</code><code class="descname">project_mirror</code><span class="sig-paren">(</span><em>frame</em>, <em>ops</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eaarl/project.html#project_mirror"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eaarl.project.project_mirror" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate mirror position</p>
+<p>Adds the mirror position to the frame DataFrame as mir_x, mir_y, and
+mir_z.</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd><dl class="first last docutils">
+<dt>frame <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span></dt>
+<dd>A DataFrame containing the pulse records.</dd>
+<dt>ops <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd>The ops conf data from the flight</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="eaarl.project.project_point">
+<code class="descclassname">eaarl.project.</code><code class="descname">project_point</code><span class="sig-paren">(</span><em>frame</em>, <em>ops</em>, <em>r_mt</em>, <em>coord_prefix=''</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eaarl/project.html#project_point"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eaarl.project.project_point" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate the target point position</p>
+<p>Adds the target position to the frame DataFrame as x, y, and z, with the
+prefix prepended if provided.</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd><dl class="first last docutils">
+<dt>frame <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span></dt>
+<dd>A DataFrame containing the pulse records.</dd>
+<dt>ops <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd>The ops conf data from the flight</dd>
+<dt>r_mt <span class="classifier-delimiter">:</span> <span class="classifier">array-like of float</span></dt>
+<dd>Distance from mirror to target, in meters</dd>
+<dt>coord_prefix <span class="classifier-delimiter">:</span> <span class="classifier">string</span></dt>
+<dd>A prefix to prepend to x, y, and z when adding the target
+coordinates to the DataFrame. The prefix will have _ added if
+missing. For example, if <code class="docutils literal"><span class="pre">coord_prefix='fs'</span></code>, then the target
+coordinates will be added as ‘fs_x’, ‘fs_y’, and ‘fs_z’.</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="eaarl.project.target_range">
+<code class="descclassname">eaarl.project.</code><code class="descname">target_range</code><span class="sig-paren">(</span><em>base_range</em>, <em>tx_pos</em>, <em>rx_pos</em>, <em>channel</em>, <em>ops</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eaarl/project.html#target_range"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eaarl.project.target_range" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate range from mirror to target</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd><dl class="first last docutils">
+<dt>base_range <span class="classifier-delimiter">:</span> <span class="classifier">array-like of integer</span></dt>
+<dd>Nanoseconds from start of transmit waveform to return waveform
+(i.e., frame.range)</dd>
+<dt>tx_pos <span class="classifier-delimiter">:</span> <span class="classifier">array-like of float</span></dt>
+<dd>Position in transmit of center of energy</dd>
+<dt>rx_pos <span class="classifier-delimiter">:</span> <span class="classifier">array-like of float</span></dt>
+<dd>Position in return of target center of energy</dd>
+<dt>channel <span class="classifier-delimiter">:</span> <span class="classifier">array-like of integer</span></dt>
+<dd>Channel of point</dd>
+<dt>ops <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd>The ops conf data from the flight</dd>
+</dl>
+</dd>
+<dt>Returns <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
+<dd>Distance from mirror to target, in meters.</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../code.html">Code documentation</a><ul>
+      <li>Previous: <a href="eaarl.io.waveforms.tld.html" title="previous chapter">eaarl.io.waveforms.tld</a></li>
+      <li>Next: <a href="eaarl.rcf.html" title="next chapter">eaarl.rcf</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/code/eaarl.project.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      
+      
+      
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/code/eaarl.project.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

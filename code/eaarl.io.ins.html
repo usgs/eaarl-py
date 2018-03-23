@@ -1,0 +1,176 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>eaarl.io.ins &#8212; eaarl-py 0.1.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="eaarl.io.waveforms" href="eaarl.io.waveforms.html" />
+    <link rel="prev" title="eaarl.io.gps" href="eaarl.io.gps.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-eaarl.io.ins">
+<span id="eaarl-io-ins"></span><h1>eaarl.io.ins<a class="headerlink" href="#module-eaarl.io.ins" title="Permalink to this headline">¶</a></h1>
+<p>Handling for ins trajectory file</p>
+<dl class="function">
+<dt id="eaarl.io.ins.add_to_frame">
+<code class="descclassname">eaarl.io.ins.</code><code class="descname">add_to_frame</code><span class="sig-paren">(</span><em>frame</em>, <em>sod</em>, <em>ins</em>, <em>ops=None</em>, <em>prefix='ins_'</em>, <em>zone=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eaarl/io/ins.html#add_to_frame"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eaarl.io.ins.add_to_frame" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds interpolated INS data to a frame</p>
+<dl class="docutils">
+<dt>Adds the following fields to the given dataframe:</dt>
+<dd><ul class="first last simple">
+<li>ins_lon - longitude of GPS antenna in degrees</li>
+<li>ins_lat - latitude of GPS antenna in degrees</li>
+<li>ins_alt - altitude of GPS antenna in meters</li>
+<li>ins_roll - roll of INS in degrees</li>
+<li>ins_pitch - pitch of INS in degrees</li>
+<li>ins_heading - heading of INS in degrees</li>
+<li>ins_east - UTM easting of GPS antenna in meters</li>
+<li>ins_north - UTM northing of GPS antenna in meters</li>
+<li>ins_zone - UTM zone for ins_east and ins_north</li>
+</ul>
+</dd>
+<dt>Parameters</dt>
+<dd><dl class="first last docutils">
+<dt>frame <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span></dt>
+<dd>A pandas DataFrame that will have fields added to it</dd>
+<dt>sod <span class="classifier-delimiter">:</span> <span class="classifier">np.array or pandas.Series</span></dt>
+<dd>Seconds-of-the-day time values that correspond to the records in
+the frame</dd>
+<dt>ins <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span></dt>
+<dd>INS data to interpolate from</dd>
+<dt>ops <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd>The ops data for the flight</dd>
+<dt>prefix <span class="classifier-delimiter">:</span> <span class="classifier">string, default “ins\_”</span></dt>
+<dd>Allows you to change the prefix used for the added fields.</dd>
+<dt>zone <span class="classifier-delimiter">:</span> <span class="classifier">number or None</span></dt>
+<dd>Allows you to specify a UTM zone that should be used when deriving
+the northing and easting values</dd>
+</dl>
+</dd>
+<dt>Returns <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span></dt>
+<dd>Returns the DataFrame that was passed to it, which now contains added
+fields.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="eaarl.io.ins.apply_corrections">
+<code class="descclassname">eaarl.io.ins.</code><code class="descname">apply_corrections</code><span class="sig-paren">(</span><em>ins</em>, <em>gps_time_offset=0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eaarl/io/ins.html#apply_corrections"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eaarl.io.ins.apply_corrections" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update INS data with relevant corrections</p>
+<p>The timestamp in an INS file can originally be in seconds-of-the-week
+format. This converts it to seconds-of-the-mission-day format.</p>
+<p>The heading is also “unwrapped” so the angle values avoid big jumps. For
+example, the sequence [359, 1] will become [359, 361]. This speeds up
+interpolation.</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd><dl class="first last docutils">
+<dt>ins <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span></dt>
+<dd>A DataFrame containing the INS data</dd>
+<dt>gps_time_offset <span class="classifier-delimiter">:</span> <span class="classifier">numeric</span></dt>
+<dd>GPS time offset to apply to the data to convert it to UTC time.</dd>
+</dl>
+</dd>
+<dt>Returns <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span></dt>
+<dd>Returns the modified ins DataFrame.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="eaarl.io.ins.read">
+<code class="descclassname">eaarl.io.ins.</code><code class="descname">read</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eaarl/io/ins.html#read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eaarl.io.ins.read" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read INS data from a given HDF5 file</p>
+<dl class="docutils">
+<dt>Returns <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span></dt>
+<dd>Returns a DataFrame with the file’s data.</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../code.html">Code documentation</a><ul>
+      <li>Previous: <a href="eaarl.io.gps.html" title="previous chapter">eaarl.io.gps</a></li>
+      <li>Next: <a href="eaarl.io.waveforms.html" title="next chapter">eaarl.io.waveforms</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/code/eaarl.io.ins.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      
+      
+      
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/code/eaarl.io.ins.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

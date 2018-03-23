@@ -1,0 +1,220 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>eaarl.analyze &#8212; eaarl-py 0.1.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="eaarl.constants" href="eaarl.constants.html" />
+    <link rel="prev" title="Code documentation" href="../code.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-eaarl.analyze">
+<span id="eaarl-analyze"></span><h1>eaarl.analyze<a class="headerlink" href="#module-eaarl.analyze" title="Permalink to this headline">¶</a></h1>
+<p>Process raw data to derive pointeger records</p>
+<dl class="function">
+<dt id="eaarl.analyze.add_fs">
+<code class="descclassname">eaarl.analyze.</code><code class="descname">add_fs</code><span class="sig-paren">(</span><em>frame</em>, <em>ops</em>, <em>prefix='fs'</em>, <em>limit=12</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eaarl/analyze.html#add_fs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eaarl.analyze.add_fs" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add the first surface target to the waveform data using centroid</p>
+<p>Detects a target using the centroid of the waveform. This will generally
+correspond to the first surface.</p>
+<p>Adds five fields to the dataframe: fs_pos, which is the position in the
+waveform of the target; fs_range, which is the distance in meters between
+the mirror and the target; and fx_x, fs_y, and fs_z, which are the UTM
+coordinates of the target.</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd><dl class="first last docutils">
+<dt>frame <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span></dt>
+<dd>DataFrame with pulse data as returned by <code class="xref py py-func docutils literal"><span class="pre">get_for_region()</span></code>,
+<code class="xref py py-func docutils literal"><span class="pre">get_by_time()</span></code>, or <code class="xref py py-func docutils literal"><span class="pre">get_by_rasters()</span></code>.</dd>
+<dt>ops <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd>The ops data, available as flight.ops on an eaarl.io.flight.Flight
+or by manually loading an ops file as a dict.</dd>
+<dt>prefix <span class="classifier-delimiter">:</span> <span class="classifier">string, default “fs\_”</span></dt>
+<dd>Allows you to change the prefix for the fields added to the
+dataframe.</dd>
+<dt>limit <span class="classifier-delimiter">:</span> <span class="classifier">integer or None, default 12</span></dt>
+<dd>Limits how many samples of the waveform are used for the centroid
+calculation. By default, the first 12 samples are used.</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="eaarl.analyze.add_mirror">
+<code class="descclassname">eaarl.analyze.</code><code class="descname">add_mirror</code><span class="sig-paren">(</span><em>frame</em>, <em>ops</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eaarl/analyze.html#add_mirror"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eaarl.analyze.add_mirror" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds the mirror location to the records</p>
+<p>Adds four fields to the dataframe: tx_pos, which is the centroid of the
+waveform; and mir_x, mir_y, and mir_z, which are the UTM coordinates of the
+mirror on the plane.</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd><dl class="first last docutils">
+<dt>frame <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span></dt>
+<dd>Dataframe with waveform records.</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="eaarl.analyze.centroid">
+<code class="descclassname">eaarl.analyze.</code><code class="descname">centroid</code><span class="sig-paren">(</span><em>wf</em>, <em>limit=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eaarl/analyze.html#centroid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eaarl.analyze.centroid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the centroid of the waveform</p>
+<p>Returns the 0-based index into the waveform where the centroid is located.
+If a centroid cannot be calculated, returns -1.</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd><dl class="first last docutils">
+<dt>wf <span class="classifier-delimiter">:</span> <span class="classifier">sequence of numbers</span></dt>
+<dd>Any sequence of numbers suitable as input to np.array, representing
+the sample values for the digitized waveform.</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="eaarl.analyze.remove_failed_thresh">
+<code class="descclassname">eaarl.analyze.</code><code class="descname">remove_failed_thresh</code><span class="sig-paren">(</span><em>frame</em>, <em>rx=True</em>, <em>tx=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eaarl/analyze.html#remove_failed_thresh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eaarl.analyze.remove_failed_thresh" title="Permalink to this definition">¶</a></dt>
+<dd><p>Removes records with failed rx/tx thresholds.</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd><dl class="first last docutils">
+<dt>frame <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span></dt>
+<dd>DataFrame to discard records from. Must contain fields thresh_rx
+and thresh_tx.</dd>
+<dt>rx <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
+<dd>If True, discard records where thersh_rx == 1.</dd>
+<dt>tx <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
+<dd>If True, discard records where thersh_tx == 1.</dd>
+</dl>
+</dd>
+<dt>Returns <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span></dt>
+<dd>New pandas.DataFrame with kept records.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="eaarl.analyze.select_eaarla_channel">
+<code class="descclassname">eaarl.analyze.</code><code class="descname">select_eaarla_channel</code><span class="sig-paren">(</span><em>frame</em>, <em>max_saturated=5</em>, <em>max_samples=12</em>, <em>saturation_value=250</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eaarl/analyze.html#select_eaarla_channel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eaarl.analyze.select_eaarla_channel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a frame with the optimal channel for each EAARL-A raster.</p>
+<p>The EAARL-A system collected three channels for each laser pulse. Channel 1
+received 90% of the return energy, channel 2 received 9% of the return
+energy, and channel 3 received 1% of the return energy. This permits a
+greater overall range of sensitivity: if the first channel is saturated,
+you can use the second; if the second is saturated, you can use the third.
+(Channel 4 is unused on the EAARL-A system and contains noise, so it is
+never used.)</p>
+<p>This function picks the first non-saturated channel for each pulse.</p>
+<dl class="docutils">
+<dt>Parameters</dt>
+<dd><dl class="first last docutils">
+<dt>frame <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span></dt>
+<dd>DataFrame of raster data to extract from. Must contain fields
+channel, raster_number, pulse_number, and rx. Must be sorted by
+raster_number, then pulse_number, then channel.</dd>
+<dt>max_saturated <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>Maximum number of samples that may be saturated. Default is 5.</dd>
+<dt>max_samples <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>Maximum number of samples at the head of the waveform to check.
+Defaults to 12.</dd>
+<dt>saturation_value <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
+<dd>Saturation value threshold. If a sample is greater than or equal to
+this, it is saturated. Default is 250.</dd>
+</dl>
+</dd>
+<dt>Returns <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span></dt>
+<dd>New pandas.DataFrame with kept records.</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="../code.html">Code documentation</a><ul>
+      <li>Previous: <a href="../code.html" title="previous chapter">Code documentation</a></li>
+      <li>Next: <a href="eaarl.constants.html" title="next chapter">eaarl.constants</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/code/eaarl.analyze.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      
+      
+      
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/code/eaarl.analyze.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

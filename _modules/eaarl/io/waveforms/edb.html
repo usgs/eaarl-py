@@ -1,0 +1,221 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>eaarl.io.waveforms.edb &#8212; eaarl-py 0.1.0 documentation</title>
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for eaarl.io.waveforms.edb</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1"># vim: set fileencoding=utf-8 :</span>
+<span class="sd">&#39;&#39;&#39;Handling for EDB files&#39;&#39;&#39;</span>
+
+<span class="c1"># Boilerplate for cross-compatibility of Python 2/3</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">unicode_literals</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">absolute_import</span>
+<span class="kn">from</span> <span class="nn">future.builtins</span> <span class="k">import</span> <span class="o">*</span> <span class="c1"># pylint: disable=wildcard-import</span>
+<span class="kn">import</span> <span class="nn">future.standard_library</span>
+<span class="n">future</span><span class="o">.</span><span class="n">standard_library</span><span class="o">.</span><span class="n">install_aliases</span><span class="p">()</span>
+
+<span class="kn">import</span> <span class="nn">struct</span>
+
+<span class="kn">from</span> <span class="nn">._types</span> <span class="k">import</span> <span class="n">EDBHeader</span><span class="p">,</span> <span class="n">EDBRecord</span>
+
+<span class="c1"># pylint: disable=no-member</span>
+
+<span class="c1">####</span>
+
+<span class="k">def</span> <span class="nf">_unpack_pascal_string</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="n">offset</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Unpack a string from the buffer&#39;&#39;&#39;</span>
+    <span class="n">length</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="s1">&#39;&lt;H&#39;</span><span class="p">,</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">offset</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">offset</span> <span class="o">+=</span> <span class="mi">2</span>
+    <span class="n">raw</span> <span class="o">=</span> <span class="n">buffer</span><span class="p">[</span><span class="n">offset</span><span class="p">:</span><span class="n">offset</span><span class="o">+</span><span class="n">length</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">raw</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_unpack_pascal_strings</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">count</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Unpacks the specified number of strings from the buffer&#39;&#39;&#39;</span>
+    <span class="n">strings</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+        <span class="n">string</span> <span class="o">=</span> <span class="n">_unpack_pascal_string</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span>
+        <span class="n">strings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
+        <span class="n">offset</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">string</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span>
+    <span class="k">return</span> <span class="n">strings</span>
+
+<span class="k">def</span> <span class="nf">_pack_pascal_string</span><span class="p">(</span><span class="n">string</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Pack the given string to a buffer&#39;&#39;&#39;</span>
+    <span class="n">buf</span> <span class="o">=</span> <span class="nb">bytearray</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">struct</span><span class="o">.</span><span class="n">pack_into</span><span class="p">(</span><span class="s1">&#39;&lt;H&#39;</span><span class="p">,</span> <span class="n">buf</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">string</span><span class="p">))</span>
+    <span class="n">buf</span> <span class="o">+=</span> <span class="n">string</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;ascii&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">buf</span>
+
+<span class="k">def</span> <span class="nf">_pack_pascal_strings</span><span class="p">(</span><span class="n">strings</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Pack the given strings into a buffer&#39;&#39;&#39;</span>
+    <span class="n">buf</span> <span class="o">=</span> <span class="nb">bytearray</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">string</span> <span class="ow">in</span> <span class="n">strings</span><span class="p">:</span>
+        <span class="n">buf</span> <span class="o">+=</span> <span class="n">_pack_pascal_string</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">buf</span>
+
+<span class="c1">####</span>
+
+<div class="viewcode-block" id="decode"><a class="viewcode-back" href="../../../../code/eaarl.io.waveforms.edb.html#eaarl.io.waveforms.edb.decode">[docs]</a><span class="k">def</span> <span class="nf">decode</span><span class="p">(</span><span class="n">raw</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Decode a raw buffer into EDB records</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">offset</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="n">header</span> <span class="o">=</span> <span class="n">EDBHeader</span><span class="o">.</span><span class="n">_unpack_from</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span>
+    <span class="n">offset</span> <span class="o">+=</span> <span class="n">EDBHeader</span><span class="o">.</span><span class="n">_size</span>
+
+    <span class="n">records</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">header</span><span class="o">.</span><span class="n">record_count</span><span class="p">):</span>
+        <span class="n">records</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">EDBRecord</span><span class="o">.</span><span class="n">_unpack_from</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">offset</span><span class="p">))</span>
+        <span class="n">offset</span> <span class="o">+=</span> <span class="n">EDBRecord</span><span class="o">.</span><span class="n">_size</span>
+
+    <span class="n">files</span> <span class="o">=</span> <span class="n">_unpack_pascal_strings</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">header</span><span class="o">.</span><span class="n">file_count</span><span class="p">)</span>
+
+    <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">records</span><span class="p">:</span>
+        <span class="n">record</span> <span class="o">=</span> <span class="n">record</span><span class="o">.</span><span class="n">_asdict</span><span class="p">()</span>
+        <span class="n">record</span><span class="p">[</span><span class="s1">&#39;file_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">files</span><span class="p">[</span><span class="n">record</span><span class="p">[</span><span class="s1">&#39;file_index&#39;</span><span class="p">]</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">del</span> <span class="n">record</span><span class="p">[</span><span class="s1">&#39;file_index&#39;</span><span class="p">]</span>
+        <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="encode"><a class="viewcode-back" href="../../../../code/eaarl.io.waveforms.edb.html#eaarl.io.waveforms.edb.encode">[docs]</a><span class="k">def</span> <span class="nf">encode</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Encode a sequence of EDB records into a buffer</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c1"># Make a sorted list of files referenced</span>
+    <span class="n">files</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+        <span class="n">files</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">record</span><span class="p">[</span><span class="s1">&#39;file_name&#39;</span><span class="p">])</span>
+    <span class="n">files</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">files</span><span class="p">)</span>
+
+    <span class="c1"># Create a list of EDBRecord</span>
+    <span class="n">records</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+        <span class="n">record</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">record</span><span class="p">)</span>
+        <span class="n">record</span><span class="p">[</span><span class="s1">&#39;file_index&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">files</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">record</span><span class="p">[</span><span class="s1">&#39;file_name&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="k">del</span> <span class="n">record</span><span class="p">[</span><span class="s1">&#39;file_name&#39;</span><span class="p">]</span>
+        <span class="n">records</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">EDBRecord</span><span class="o">.</span><span class="n">_fromdict</span><span class="p">(</span><span class="n">record</span><span class="p">))</span>
+
+    <span class="c1"># Create EDBHeader</span>
+    <span class="n">files_offset</span> <span class="o">=</span> <span class="n">EDBHeader</span><span class="o">.</span><span class="n">_size</span> <span class="o">+</span> <span class="n">EDBRecord</span><span class="o">.</span><span class="n">_size</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">records</span><span class="p">)</span>
+    <span class="n">record_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">records</span><span class="p">)</span>
+    <span class="n">file_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">files</span><span class="p">)</span>
+    <span class="n">header</span> <span class="o">=</span> <span class="n">EDBHeader</span><span class="p">(</span><span class="n">files_offset</span><span class="p">,</span> <span class="n">record_count</span><span class="p">,</span> <span class="n">file_count</span><span class="p">)</span>
+
+    <span class="c1"># Pack header as bytes</span>
+    <span class="n">buf</span> <span class="o">=</span> <span class="nb">bytearray</span><span class="p">(</span><span class="n">files_offset</span><span class="p">)</span>
+    <span class="n">offset</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">header</span><span class="o">.</span><span class="n">_pack_into</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">offset</span> <span class="o">+=</span> <span class="n">EDBHeader</span><span class="o">.</span><span class="n">_size</span>
+
+    <span class="c1"># Pack records as bytes</span>
+    <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">records</span><span class="p">:</span>
+        <span class="n">record</span><span class="o">.</span><span class="n">_pack_into</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span>
+        <span class="n">offset</span> <span class="o">+=</span> <span class="n">EDBRecord</span><span class="o">.</span><span class="n">_size</span>
+
+    <span class="c1"># Pack files as bytes</span>
+    <span class="n">buf</span> <span class="o">+=</span> <span class="n">_pack_pascal_strings</span><span class="p">(</span><span class="n">files</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">buf</span></div>
+
+<span class="c1">####</span>
+
+<div class="viewcode-block" id="read"><a class="viewcode-back" href="../../../../code/eaarl.io.waveforms.edb.html#eaarl.io.waveforms.edb.read">[docs]</a><span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Read records from an open file object&#39;&#39;&#39;</span>
+    <span class="n">raw</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">decode</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="read_from"><a class="viewcode-back" href="../../../../code/eaarl.io.waveforms.edb.html#eaarl.io.waveforms.edb.read_from">[docs]</a><span class="k">def</span> <span class="nf">read_from</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;rb&#39;</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Read records from a file specified by name&#39;&#39;&#39;</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">read</span><span class="p">(</span><span class="n">f</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="write"><a class="viewcode-back" href="../../../../code/eaarl.io.waveforms.edb.html#eaarl.io.waveforms.edb.write">[docs]</a><span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">records</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Write records to an open file object&#39;&#39;&#39;</span>
+    <span class="n">raw</span> <span class="o">=</span> <span class="n">encode</span><span class="p">(</span><span class="n">records</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="write_to"><a class="viewcode-back" href="../../../../code/eaarl.io.waveforms.edb.html#eaarl.io.waveforms.edb.write_to">[docs]</a><span class="k">def</span> <span class="nf">write_to</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">records</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;wb&#39;</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Write records to a file specified by name&#39;&#39;&#39;</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">mode</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">write</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">records</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      
+      
+      
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

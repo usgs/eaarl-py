@@ -1,0 +1,326 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Working with flights &#8212; eaarl-py 0.1.0 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Working with waveforms" href="waveforms.html" />
+    <link rel="prev" title="eaarl-py" href="../readme.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="working-with-flights">
+<h1>Working with flights<a class="headerlink" href="#working-with-flights" title="Permalink to this headline">¶</a></h1>
+<p>This page provides an introduction to working with flights. A flight object
+correlates the various raw data sources, which allows you to retrieve waveform
+data that has associated spatial information from the trajectories.</p>
+<div class="section" id="creating-a-flight">
+<h2>Creating a flight<a class="headerlink" href="#creating-a-flight" title="Permalink to this headline">¶</a></h2>
+<p>The first step to working with an EAARL dataset is to create a flight object
+that defines the four component data sources needed:</p>
+<ul class="simple">
+<li>An operational configuration file, or “ops” for short. This file provides
+measurements and calibration values necessary for using the other data
+sources together to derive a projected real-world point location.</li>
+<li>A trajectory containing inertial measurements from an inertial navigation
+system, or “ins” for short. This file actually contains both positional data
+and inertial measurements, both of which are provided at a higher frequency
+than the gps trajectory.</li>
+<li>A trajectory containing positional measurements from a GPS, or “gps” for
+short. The positional data in the gps trajectory is provided at a lower
+frequency than the ins trajectory, which makes it faster to work with when
+the additional precision is not needed.</li>
+<li>An EAARL index/database file, or “edb” for short. The index allows
+random-access retrieval of records from the associated EAARL TLD files, which
+contain the waveform data.</li>
+</ul>
+<p>When loading the data sources, you must always load the ops file first because
+some of the other files depend on values from it during their load processes.</p>
+<p>During creation, the flight’s date must also be provided. If a flight crosses GPS midnight, then use the date the flight started. The date is used for two purposes:</p>
+<ul class="simple">
+<li>The time offset between UTC and GPS time must be applied, and it varies based
+on date.</li>
+<li>The gps trajectory uses “seconds of the day” timestamps and the ins
+trajectory uses “seconds of the week” timestamps. The date is used to convert
+them into “seconds of the epoch”.</li>
+</ul>
+<p>The flight object is defined in eaarl.io.flight. Assuming you have a flight’s
+data in /data/2014-01-31, you can create a flight object for it like so:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">eaarl.io.flight</span>
+
+<span class="c1"># Create a flight object, specifying the date during creation</span>
+<span class="n">flight</span> <span class="o">=</span> <span class="n">eaarl</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">flight</span><span class="o">.</span><span class="n">Flight</span><span class="p">(</span><span class="s1">&#39;2014-01-31&#39;</span><span class="p">)</span>
+
+<span class="c1"># Load the ops file first</span>
+<span class="n">flight</span><span class="o">.</span><span class="n">load_ops</span><span class="p">(</span><span class="s1">&#39;/data/2014-01-31/py/ops/20140131.ops.json&#39;</span><span class="p">)</span>
+
+<span class="c1"># Then load the ins, gps, and edb files</span>
+<span class="n">flight</span><span class="o">.</span><span class="n">load_ins</span><span class="p">(</span><span class="s1">&#39;/data/2014-01-31/py/ins/2014-01-31-cmb-ins.ins.h5&#39;</span><span class="p">)</span>
+<span class="n">flight</span><span class="o">.</span><span class="n">load_gps</span><span class="p">(</span><span class="s1">&#39;/data/2014-01-31/py/gps/2014-01-31-cmb-pnav.gps.h5&#39;</span><span class="p">)</span>
+<span class="n">flight</span><span class="o">.</span><span class="n">load_edb</span><span class="p">(</span><span class="s1">&#39;/data/2014-01-31/eaarl/2014-01-31.idx&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Once you have flight defined, you can write out a configuration file that lets
+you load it back up in a later session:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">flight</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s1">&#39;/data/2014-01-31/flight.json&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The configuration file is a simple JSON file that lists the files that were
+loaded. It does not actually save the associated data, and any changes you
+might make to the data in memory after loading will not be reflected by it.</p>
+<p>You can later load the flight from the configuration file like so:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">eaarl.io.flight</span>
+<span class="n">flight</span> <span class="o">=</span> <span class="n">eaarl</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">flight</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;/data/2014-01-31/flight.json&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="properties-of-a-flight">
+<h2>Properties of a flight<a class="headerlink" href="#properties-of-a-flight" title="Permalink to this headline">¶</a></h2>
+<p>Once you have a flight, you can inspect the component data sources as
+properties on the object.</p>
+<p>The data from the ops file is loaded as a dict to flight.ops:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">flight</span><span class="o">.</span><span class="n">ops</span>
+<span class="go">{&#39;chn1_range_bias&#39;: -13.25, &#39;chn4_dx&#39;: -0.117, &#39;dmars_invert&#39;: 0, &#39;chn3_range_bias&#39;: -10.564, &#39;type&#39;: &#39;EAARL-B&#39;, &#39;scan_bias&#39;: -40.5, &#39;z_offset&#39;: -0.02, &#39;_timestamp&#39;: &#39;2016-09-28 22:51:14&#39;, &#39;chn1_dx&#39;: -0.117, &#39;max_sfc_sat&#39;: 2, &#39;delta_ht&#39;: 300, &#39;roll_bias&#39;: 0, &#39;x_offset&#39;: -0.03099, &#39;chn1_dy&#39;: -1.6, &#39;use_ins_for_gps&#39;: 1, &#39;chn4_dy&#39;: 0, &#39;chn3_dy&#39;: 1.6, &#39;tx_clean&#39;: 8, &#39;chn4_range_bias&#39;: -19.875, &#39;chn2_dx&#39;: 0, &#39;minsamples&#39;: 0, &#39;yaw_bias&#39;: 0, &#39;chn3_dx&#39;: -0.117, &#39;pitch_bias&#39;: 0.325, &#39;range_biasM&#39;: 0, &#39;y_offset&#39;: 0.02426, &#39;chn2_dy&#39;: 0, &#39;chn2_range_bias&#39;: -12.375}</span>
+</pre></div>
+</div>
+<p>The data from the ins trajectory is loaded as a pandas dataframe to flight.ins:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">flight</span><span class="o">.</span><span class="n">ins</span>
+<span class="go">            lon        lat        alt        sod      roll     pitch  \</span>
+<span class="go">0       -94.022656  29.956418 -22.730499  56217.025  0.950894  2.281592</span>
+<span class="go">1       -94.022656  29.956418 -22.730499  56217.030  0.951364  2.281570</span>
+<span class="go">2       -94.022656  29.956418 -22.730499  56217.035  0.951429  2.281585</span>
+<span class="gp">... </span>           <span class="o">...</span>        <span class="o">...</span>        <span class="o">...</span>        <span class="o">...</span>       <span class="o">...</span>       <span class="o">...</span>
+<span class="go">2174792 -89.084658  30.416997  28.854300  67090.985  2.921807 -9.047781</span>
+<span class="go">2174793 -89.084657  30.416995  28.820299  67090.990  2.914392 -9.052345</span>
+<span class="go">2174794 -89.084655  30.416994  28.786200  67090.995  2.907984 -9.056522</span>
+
+<span class="go">            heading</span>
+<span class="go">0        256.070349</span>
+<span class="go">1        256.070376</span>
+<span class="go">2        256.070431</span>
+<span class="gp">... </span>            <span class="o">...</span>
+<span class="go">2174792  134.038132</span>
+<span class="go">2174793  134.044320</span>
+<span class="go">2174794  134.050905</span>
+
+<span class="go">[2174795 rows x 7 columns]</span>
+</pre></div>
+</div>
+<p>The data from the gps trajectory is loaded as a pandas dataframe to flight.gps:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">flight</span><span class="o">.</span><span class="n">gps</span>
+<span class="go">            lon        lat         alt      sod  pdop   xrms      veast  \</span>
+<span class="go">0     -94.022667  29.956417  -21.821400  56200.0   1.5  0.007  -0.000000</span>
+<span class="go">1     -94.022667  29.956417  -21.821400  56200.5   1.5  0.007   0.000000</span>
+<span class="go">2     -94.022667  29.956417  -21.821400  56201.0   1.5  0.007   0.000000</span>
+<span class="gp">... </span>         <span class="o">...</span>        <span class="o">...</span>         <span class="o">...</span>      <span class="o">...</span>   <span class="o">...</span>    <span class="o">...</span>        <span class="o">...</span>
+<span class="go">21752 -89.084267  30.416649   22.647200  67076.0   1.9  0.101  36.087002</span>
+<span class="go">21753 -89.084076  30.416483   19.571899  67076.5   1.8  0.101  36.092999</span>
+<span class="go">21754 -89.084076  30.416483   19.571899  67076.5   1.8  0.101  36.092999</span>
+
+<span class="go">        vnorth    vup  sv  flag</span>
+<span class="go">0      -0.000000 -0.000   9     2</span>
+<span class="go">1       0.000000  0.000   9     2</span>
+<span class="go">2       0.000000  0.000   9     2</span>
+<span class="gp">... </span>         <span class="o">...</span>    <span class="o">...</span>  <span class="o">..</span>   <span class="o">...</span>
+<span class="go">21752 -36.757000 -6.313   8     2</span>
+<span class="go">21753 -36.685001 -5.938   8     2</span>
+<span class="go">21754 -36.685001 -5.938   8     2</span>
+
+<span class="go">[21755 rows x 11 columns]</span>
+</pre></div>
+</div>
+<p>The data from the edb file is loaded as an
+eaarl.io.waveforms.collection.EaarlCollection object:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">flight</span><span class="o">.</span><span class="n">edb</span>
+<span class="go">&lt;eaarl.io.waveforms.collection.EaarlCollection object at 0x7fe11b20d710&gt;</span>
+</pre></div>
+</div>
+<p>You can interact with flight.edb to retrieve raster records directly if you
+wish. However, the flight object contains methods that will automatically add
+associated trajectory data to the raster records for you. It is recommended
+that you start with the methods available via the flight object, and you can
+consult the documentation of EaarlCollection to learn about working with it
+directly.</p>
+</div>
+<div class="section" id="methods-of-a-flight">
+<h2>Methods of a flight<a class="headerlink" href="#methods-of-a-flight" title="Permalink to this headline">¶</a></h2>
+<p>The flight object contains methods for retrieving pulse data in there different
+ways: by raster number, by time, and by region. In all three cases, the data is
+returned as a pandas dataframe that contains a record for each channel of each
+pulse of each raster of the request. Since it may take a while to load larger
+amounts of data, a progress bar is displayed during the load process.</p>
+<div class="section" id="wfs-by-raster">
+<h3>wfs_by_raster<a class="headerlink" href="#wfs-by-raster" title="Permalink to this headline">¶</a></h3>
+<p>The simplest approach is to retrieve data based on raster number via
+wfs_by_raster. The method is flexible and supports several different sets of
+arguments.</p>
+<p>To request a single raster, simply give its raster number as an argument. This
+retrieves raster 12803:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">frame</span> <span class="o">=</span> <span class="n">flight</span><span class="o">.</span><span class="n">wfs_by_raster</span><span class="p">(</span><span class="mi">12803</span><span class="p">)</span>
+<span class="go">Loading rasters: 100%|████████████████| 1/1 [00:00&lt;00:00, 17.02raster/s]</span>
+</pre></div>
+</div>
+<p>To request a set of arbitrary rasters, provide them as a list of raster
+numbers. This retrieves three rasters (12803, 24295, and 54187):</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">frame</span> <span class="o">=</span> <span class="n">flight</span><span class="o">.</span><span class="n">wfs_by_raster</span><span class="p">([</span><span class="mi">12803</span><span class="p">,</span> <span class="mi">24295</span><span class="p">,</span> <span class="mi">54187</span><span class="p">])</span>
+<span class="go">Loading rasters: 100%|████████████████| 3/3 [00:00&lt;00:00, 13.24raster/s]</span>
+</pre></div>
+</div>
+<p>To request a sequential range of rasters, you can specify the starting raster
+number with <em>start</em> and the number of rasters with <em>count</em>. This requests the
+data for ten rasters starting from raster 12803:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">frame</span> <span class="o">=</span> <span class="n">flight</span><span class="o">.</span><span class="n">wfs_by_raster</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="mi">12803</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="go">Loading rasters: 100%|██████████████| 10/10 [00:00&lt;00:00, 35.89raster/s]</span>
+</pre></div>
+</div>
+<p>You can also request multiple sequential ranges at the same time by using the
+<em>ranges</em> option, which accepts a list of tuples where each tuple is a (<em>start</em>,
+<em>count</em>) pair as would be provided in the previous example. This requests data
+for ten rasters starting from raster 13803 and five rasters starting from
+24295:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">frame</span> <span class="o">=</span> <span class="n">flight</span><span class="o">.</span><span class="n">wfs_by_raster</span><span class="p">(</span><span class="n">ranges</span><span class="o">=</span><span class="p">[(</span><span class="mi">12803</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="p">(</span><span class="mi">24295</span><span class="p">,</span> <span class="mi">5</span><span class="p">)])</span>
+<span class="go">Loading rasters: 100%|██████████████| 15/15 [00:00&lt;00:00, 40.32raster/s]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="wfs-by-time">
+<h3>wfs_by_time<a class="headerlink" href="#wfs-by-time" title="Permalink to this headline">¶</a></h3>
+<p>Similarly, you can retrieve data based on seconds-of-the-epoch time using
+wfs_by_time.</p>
+<p>Use <em>start</em> and <em>stop</em> to request rasters that fall within a specified time
+period. This requests rasters with a timestamp between 1391188200 and
+1391188210:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">frame</span> <span class="o">=</span> <span class="n">flight</span><span class="o">.</span><span class="n">wfs_by_time</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="mi">1391188200</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="mi">1391188210</span><span class="p">)</span>
+<span class="go">Loading rasters: 100%|████████████| 202/202 [00:05&lt;00:00, 37.84raster/s]</span>
+</pre></div>
+</div>
+<p>You can also request multiple time periods using <em>ranges</em>, which accepts a list
+of tuples where each tuple is (<em>start</em>, <em>stop</em>). This requests data for rasters
+between times 1391188200 and 1391188201 as well as rasters between times
+1391188207 and 1391188208:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">frame</span> <span class="o">=</span> <span class="n">flight</span><span class="o">.</span><span class="n">wfs_by_time</span><span class="p">(</span><span class="n">ranges</span><span class="o">=</span><span class="p">[(</span><span class="mi">1391188200</span><span class="p">,</span> <span class="mi">1391188201</span><span class="p">),</span>
+<span class="gp">... </span>                                   <span class="p">(</span><span class="mi">1391188207</span><span class="p">,</span> <span class="mi">1391188208</span><span class="p">)])</span>
+<span class="go">Loading rasters: 100%|██████████████| 41/41 [00:01&lt;00:00, 32.57raster/s]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="wfs-by-region">
+<h3>wfs_by_region<a class="headerlink" href="#wfs-by-region" title="Permalink to this headline">¶</a></h3>
+<p>If you have the shapely library installed, you can also retrieve data based on
+a spatial region. Your spatial region should use WGS-84 geographic coordinates.
+Any bounded shapely geometry type is permitted.</p>
+<p>Data will be retrieved for all rasters where the plane’s location was inside
+the region during data collection. This does not correspond perfectly to the
+area of data coverage itself, since the lidar coverage extends to the left and
+right of the plane. It may be helpful to expand your region by a few hundred
+meters.</p>
+<p>This requests data where the plane was located between 89.20 W and 89.19 W
+longitude and between 29.47 N and 29.48 N latitude:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">shapely.geometry</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">region</span> <span class="o">=</span> <span class="n">shapely</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">box</span><span class="p">(</span><span class="o">-</span><span class="mf">89.195</span><span class="p">,</span> <span class="o">-</span><span class="mf">89.194</span><span class="p">,</span> <span class="mf">29.473</span><span class="p">,</span> <span class="mf">29.474</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">frame</span> <span class="o">=</span> <span class="n">flight</span><span class="o">.</span><span class="n">wfs_by_region</span><span class="p">(</span><span class="n">region</span><span class="p">)</span>
+<span class="go">Loading rasters: 100%|██████████| 1460/1460 [00:53&lt;00:00, 27.13raster/s]</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Working with flights</a><ul>
+<li><a class="reference internal" href="#creating-a-flight">Creating a flight</a></li>
+<li><a class="reference internal" href="#properties-of-a-flight">Properties of a flight</a></li>
+<li><a class="reference internal" href="#methods-of-a-flight">Methods of a flight</a><ul>
+<li><a class="reference internal" href="#wfs-by-raster">wfs_by_raster</a></li>
+<li><a class="reference internal" href="#wfs-by-time">wfs_by_time</a></li>
+<li><a class="reference internal" href="#wfs-by-region">wfs_by_region</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="../readme.html" title="previous chapter">eaarl-py</a></li>
+      <li>Next: <a href="waveforms.html" title="next chapter">Working with waveforms</a></li>
+  </ul></li>
+</ul>
+</div>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/tutorial/flight.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      
+      
+      
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+      |
+      <a href="../_sources/tutorial/flight.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

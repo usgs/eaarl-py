@@ -1,0 +1,463 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>eaarl.io.flight &#8212; eaarl-py 0.1.0 documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for eaarl.io.flight</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1"># vim: set fileencoding=utf-8 :</span>
+<span class="sd">&#39;&#39;&#39;Handling for mission data</span>
+
+<span class="sd">.. data:: flip_waveforms</span>
+
+<span class="sd">    Specifies whether waveforms should be &quot;flipped&quot; when loading. EAARL</span>
+<span class="sd">    waveforms are inverted by default. When this setting is True (the default),</span>
+<span class="sd">    the waveforms are flipped so that they look as one would normally expect.</span>
+<span class="sd">    Set to False to disable that behavior. Note that other code (such as in</span>
+<span class="sd">    eaarl.analyze) expects the waveforms to be flipped (so they are not</span>
+<span class="sd">    inverted), so setting this to False may cause some functions to not yield</span>
+<span class="sd">    sensible results.</span>
+<span class="sd">&#39;&#39;&#39;</span>
+
+<span class="c1"># Boilerplate for cross-compatibility of Python 2/3</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">unicode_literals</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">absolute_import</span>
+<span class="kn">from</span> <span class="nn">future.builtins</span> <span class="k">import</span> <span class="o">*</span> <span class="c1"># pylint: disable=wildcard-import</span>
+<span class="kn">import</span> <span class="nn">future.standard_library</span>
+<span class="n">future</span><span class="o">.</span><span class="n">standard_library</span><span class="o">.</span><span class="n">install_aliases</span><span class="p">()</span>
+
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">os.path</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">gps</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">ins</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">waveforms</span>
+
+<span class="kn">from</span> <span class="nn">..util</span> <span class="k">import</span> <span class="n">time</span>
+
+<span class="c1"># Should waveforms get flipped?</span>
+<span class="n">flip_waveforms</span> <span class="o">=</span> <span class="kc">True</span> <span class="c1"># pylint: disable=invalid-name</span>
+
+<div class="viewcode-block" id="Error"><a class="viewcode-back" href="../../../code/eaarl.io.flight.html#eaarl.io.flight.Error">[docs]</a><span class="k">class</span> <span class="nc">Error</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Base class for exceptions in this module&#39;&#39;&#39;</span>
+    <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="NotLoadedError"><a class="viewcode-back" href="../../../code/eaarl.io.flight.html#eaarl.io.flight.NotLoadedError">[docs]</a><span class="k">class</span> <span class="nc">NotLoadedError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Base for exceptions relating to dependency data not loaded&#39;&#39;&#39;</span>
+    <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="OpsNotLoadedError"><a class="viewcode-back" href="../../../code/eaarl.io.flight.html#eaarl.io.flight.OpsNotLoadedError">[docs]</a><span class="k">class</span> <span class="nc">OpsNotLoadedError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Exception raised when ops data is needed but is not loaded&#39;&#39;&#39;</span>
+    <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="InsNotLoadedError"><a class="viewcode-back" href="../../../code/eaarl.io.flight.html#eaarl.io.flight.InsNotLoadedError">[docs]</a><span class="k">class</span> <span class="nc">InsNotLoadedError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Exception raised when ins data is needed but is not loaded&#39;&#39;&#39;</span>
+    <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="GpsNotLoadedError"><a class="viewcode-back" href="../../../code/eaarl.io.flight.html#eaarl.io.flight.GpsNotLoadedError">[docs]</a><span class="k">class</span> <span class="nc">GpsNotLoadedError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Exception raised when gps data is needed but is not loaded&#39;&#39;&#39;</span>
+    <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="EdbNotLoadedError"><a class="viewcode-back" href="../../../code/eaarl.io.flight.html#eaarl.io.flight.EdbNotLoadedError">[docs]</a><span class="k">class</span> <span class="nc">EdbNotLoadedError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Exception raised when edb data is needed but is not loaded&#39;&#39;&#39;</span>
+    <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="InvalidDateError"><a class="viewcode-back" href="../../../code/eaarl.io.flight.html#eaarl.io.flight.InvalidDateError">[docs]</a><span class="k">class</span> <span class="nc">InvalidDateError</span><span class="p">(</span><span class="n">Error</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Exception raised when the date doesn&#39;t work correctly&#39;&#39;&#39;</span>
+<div class="viewcode-block" id="InvalidDateError.__init__"><a class="viewcode-back" href="../../../code/eaarl.io.flight.html#eaarl.io.flight.InvalidDateError.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">err</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">err</span> <span class="o">=</span> <span class="n">err</span></div></div>
+
+<div class="viewcode-block" id="create_flight"><a class="viewcode-back" href="../../../code/eaarl.io.flight.html#eaarl.io.flight.create_flight">[docs]</a><span class="k">def</span> <span class="nf">create_flight</span><span class="p">(</span><span class="n">date</span><span class="p">,</span> <span class="n">basedir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ops</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ins</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gps</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">edb</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">zone</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Loads a flight with the given configuration</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">        date : string</span>
+<span class="sd">            The date of the flight</span>
+<span class="sd">        basedir : string or None</span>
+<span class="sd">            If provided, then paths are resolved as relative to this path.</span>
+<span class="sd">        ops : string or None</span>
+<span class="sd">            Path to the ops configuration file</span>
+<span class="sd">        ins : string or None</span>
+<span class="sd">            Path to the ins file</span>
+<span class="sd">        gps : string or None</span>
+<span class="sd">            Path to the gps file</span>
+<span class="sd">        edb : string or None</span>
+<span class="sd">            Path to the edb file</span>
+<span class="sd">        zone : string or None</span>
+<span class="sd">            UTM zone for the data</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">conf</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;date&#39;</span><span class="p">:</span> <span class="n">date</span><span class="p">}</span>
+    <span class="k">if</span> <span class="n">ops</span><span class="p">:</span>
+        <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;ops&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ops</span>
+    <span class="k">if</span> <span class="n">ins</span><span class="p">:</span>
+        <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;ins&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ins</span>
+    <span class="k">if</span> <span class="n">gps</span><span class="p">:</span>
+        <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;gps&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">gps</span>
+    <span class="k">if</span> <span class="n">edb</span><span class="p">:</span>
+        <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;edb&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">edb</span>
+    <span class="k">if</span> <span class="n">zone</span><span class="p">:</span>
+        <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;zone&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">zone</span>
+    <span class="k">return</span> <span class="n">fromdict</span><span class="p">(</span><span class="n">conf</span><span class="p">,</span> <span class="n">basedir</span><span class="o">=</span><span class="n">basedir</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="fromdict"><a class="viewcode-back" href="../../../code/eaarl.io.flight.html#eaarl.io.flight.fromdict">[docs]</a><span class="k">def</span> <span class="nf">fromdict</span><span class="p">(</span><span class="n">conf</span><span class="p">,</span> <span class="n">basedir</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Loads a flight based on a configuration dict</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">        basedir : string or None</span>
+<span class="sd">            If provided, then paths in the configuration will be resolved as</span>
+<span class="sd">            relative to this path.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">if</span> <span class="n">basedir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># force a copy to avoid modifying original</span>
+        <span class="n">conf</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">conf</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;ops&#39;</span><span class="p">,</span> <span class="s1">&#39;ins&#39;</span><span class="p">,</span> <span class="s1">&#39;gps&#39;</span><span class="p">,</span> <span class="s1">&#39;edb&#39;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">conf</span><span class="p">:</span>
+                <span class="n">conf</span><span class="p">[</span><span class="n">field</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">basedir</span><span class="p">,</span> <span class="n">conf</span><span class="p">[</span><span class="n">field</span><span class="p">])</span>
+
+    <span class="n">zone</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="s1">&#39;zone&#39;</span> <span class="ow">in</span> <span class="n">conf</span><span class="p">:</span>
+        <span class="n">zone</span> <span class="o">=</span> <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;zone&#39;</span><span class="p">]</span>
+
+    <span class="n">flight</span> <span class="o">=</span> <span class="n">Flight</span><span class="p">(</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">],</span> <span class="n">zone</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s1">&#39;ops&#39;</span> <span class="ow">in</span> <span class="n">conf</span><span class="p">:</span>
+        <span class="n">flight</span><span class="o">.</span><span class="n">load_ops</span><span class="p">(</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;ops&#39;</span><span class="p">])</span>
+    <span class="k">if</span> <span class="s1">&#39;ins&#39;</span> <span class="ow">in</span> <span class="n">conf</span><span class="p">:</span>
+        <span class="n">flight</span><span class="o">.</span><span class="n">load_ins</span><span class="p">(</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;ins&#39;</span><span class="p">])</span>
+    <span class="k">if</span> <span class="s1">&#39;gps&#39;</span> <span class="ow">in</span> <span class="n">conf</span><span class="p">:</span>
+        <span class="n">flight</span><span class="o">.</span><span class="n">load_gps</span><span class="p">(</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;gps&#39;</span><span class="p">])</span>
+    <span class="k">if</span> <span class="s1">&#39;edb&#39;</span> <span class="ow">in</span> <span class="n">conf</span><span class="p">:</span>
+        <span class="n">flight</span><span class="o">.</span><span class="n">load_edb</span><span class="p">(</span><span class="n">conf</span><span class="p">[</span><span class="s1">&#39;edb&#39;</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">flight</span></div>
+
+<div class="viewcode-block" id="load"><a class="viewcode-back" href="../../../code/eaarl.io.flight.html#eaarl.io.flight.load">[docs]</a><span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="n">conf_file</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Loads a flight based on a configuration file&#39;&#39;&#39;</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">conf_file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">conf</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">base</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">conf_file</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">fromdict</span><span class="p">(</span><span class="n">conf</span><span class="p">,</span> <span class="n">base</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Flight"><a class="viewcode-back" href="../../../code/eaarl.io.flight.html#eaarl.io.flight.Flight">[docs]</a><span class="k">class</span> <span class="nc">Flight</span><span class="p">:</span>
+    <span class="sd">&#39;&#39;&#39;Represents a set of raw data sources for an EAARL flight</span>
+
+<span class="sd">    This facilitates correlating the data sources together.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+
+    <span class="c1"># pylint: disable=too-many-instance-attributes</span>
+
+<div class="viewcode-block" id="Flight.__init__"><a class="viewcode-back" href="../../../code/eaarl.io.flight.html#eaarl.io.flight.Flight.__init__">[docs]</a>    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">date</span><span class="p">,</span> <span class="n">zone</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">date</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">strptime</span><span class="p">(</span><span class="n">date</span><span class="p">,</span> <span class="s1">&#39;%Y-%m-</span><span class="si">%d</span><span class="s1">&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">date</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">date</span> <span class="o">=</span> <span class="n">date</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">zone</span> <span class="o">=</span> <span class="n">zone</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">ops_file</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ops</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ins_file</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ins</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gps_file</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gps</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">edb_file</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">edb</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="Flight.gps_time_offset"><a class="viewcode-back" href="../../../code/eaarl.io.flight.html#eaarl.io.flight.Flight.gps_time_offset">[docs]</a>    <span class="k">def</span> <span class="nf">gps_time_offset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Returns the time offset between GPS and UTC time for the flight&#39;&#39;&#39;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">time</span><span class="o">.</span><span class="n">gps_utc_offset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">date</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">InvalidDateError</span><span class="p">(</span><span class="n">err</span><span class="p">,</span> <span class="s1">&#39;date is not compatible with datetime.date&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Flight.soe_day_start"><a class="viewcode-back" href="../../../code/eaarl.io.flight.html#eaarl.io.flight.Flight.soe_day_start">[docs]</a>    <span class="k">def</span> <span class="nf">soe_day_start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Returns the epoch time for the start of the day of the flight&#39;&#39;&#39;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">time</span><span class="o">.</span><span class="n">date_epoch_seconds</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">date</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">InvalidDateError</span><span class="p">(</span><span class="n">err</span><span class="p">,</span> <span class="s1">&#39;date is not compatible with datetime.date&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Flight.load_ops"><a class="viewcode-back" href="../../../code/eaarl.io.flight.html#eaarl.io.flight.Flight.load_ops">[docs]</a>    <span class="k">def</span> <span class="nf">load_ops</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ops_file</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Loads the given OPS file&#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ops_file</span> <span class="o">=</span> <span class="n">ops_file</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ops</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">ops_file</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Flight.load_ins"><a class="viewcode-back" href="../../../code/eaarl.io.flight.html#eaarl.io.flight.Flight.load_ins">[docs]</a>    <span class="k">def</span> <span class="nf">load_ins</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ins_file</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Loads the given INS file&#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ops</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">OpsNotLoadedError</span><span class="p">(</span><span class="s1">&#39;load_ins requires ops data&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ins_file</span> <span class="o">=</span> <span class="n">ins_file</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ins</span> <span class="o">=</span> <span class="n">ins</span><span class="o">.</span><span class="n">apply_corrections</span><span class="p">(</span><span class="n">ins</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">ins_file</span><span class="p">),</span>
+                                         <span class="bp">self</span><span class="o">.</span><span class="n">gps_time_offset</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="Flight.load_gps"><a class="viewcode-back" href="../../../code/eaarl.io.flight.html#eaarl.io.flight.Flight.load_gps">[docs]</a>    <span class="k">def</span> <span class="nf">load_gps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gps_file</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Loads the given GPS file&#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gps_file</span> <span class="o">=</span> <span class="n">gps_file</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gps</span> <span class="o">=</span> <span class="n">gps</span><span class="o">.</span><span class="n">apply_corrections</span><span class="p">(</span><span class="n">gps</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">gps_file</span><span class="p">),</span>
+                                         <span class="bp">self</span><span class="o">.</span><span class="n">gps_time_offset</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="Flight.load_edb"><a class="viewcode-back" href="../../../code/eaarl.io.flight.html#eaarl.io.flight.Flight.load_edb">[docs]</a>    <span class="k">def</span> <span class="nf">load_edb</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">edb_file</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Loads the given EDB file&#39;&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">edb_file</span> <span class="o">=</span> <span class="n">edb_file</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">edb</span> <span class="o">=</span> <span class="n">waveforms</span><span class="o">.</span><span class="n">EaarlCollection</span><span class="p">(</span><span class="n">edb_file</span><span class="o">=</span><span class="n">edb_file</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_wfs_extra</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rasters</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Handles the extra stuff for waveform retrieval</span>
+
+<span class="sd">        Performs follow-up handling after raster retrieval:</span>
+<span class="sd">            * Performs transmit waveform cleaning if ops[&#39;tx_clean&#39;] is set.</span>
+<span class="sd">            * Flattens rasters into pulses, then into waveforms.</span>
+<span class="sd">            * Interpolates INS data for the waveform records</span>
+
+<span class="sd">        Returns pandas.DataFrame of waveform records.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ops</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">OpsNotLoadedError</span><span class="p">(</span><span class="s1">&#39;loading pulses requires ops data&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ins</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">InsNotLoadedError</span><span class="p">(</span><span class="s1">&#39;loading pulses requires ins data&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s1">&#39;tx_clean&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">ops</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">ops</span><span class="p">[</span><span class="s1">&#39;tx_clean&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">waveforms</span><span class="o">.</span><span class="n">rasters_tx_clean</span><span class="p">(</span><span class="n">rasters</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ops</span><span class="p">[</span><span class="s1">&#39;tx_clean&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">flip_waveforms</span><span class="p">:</span>
+            <span class="n">waveforms</span><span class="o">.</span><span class="n">rasters_wf_flip</span><span class="p">(</span><span class="n">rasters</span><span class="p">)</span>
+
+        <span class="n">pulses</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">waveforms</span><span class="o">.</span><span class="n">rasters_to_pulses</span><span class="p">(</span><span class="n">rasters</span><span class="p">))</span>
+        <span class="n">pulse_sod</span> <span class="o">=</span> <span class="n">pulses</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">soe_day_start</span><span class="p">()</span>
+
+        <span class="n">ins</span><span class="o">.</span><span class="n">add_to_frame</span><span class="p">(</span><span class="n">pulses</span><span class="p">,</span> <span class="n">pulse_sod</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ins</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ops</span><span class="p">,</span> <span class="n">zone</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">zone</span><span class="p">)</span>
+
+        <span class="n">pulse_records</span> <span class="o">=</span> <span class="n">pulses</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="s1">&#39;records&#39;</span><span class="p">)</span>
+        <span class="n">channel_records</span> <span class="o">=</span> <span class="n">waveforms</span><span class="o">.</span><span class="n">pulses_to_waveforms</span><span class="p">(</span><span class="n">pulse_records</span><span class="p">)</span>
+        <span class="n">wfs</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">channel_records</span><span class="p">)</span>
+
+        <span class="n">wfs</span><span class="o">.</span><span class="n">set_index</span><span class="p">([</span><span class="s1">&#39;raster_number&#39;</span><span class="p">,</span> <span class="s1">&#39;pulse_number&#39;</span><span class="p">,</span> <span class="s1">&#39;channel&#39;</span><span class="p">],</span>
+                      <span class="n">drop</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">wfs</span>
+
+<div class="viewcode-block" id="Flight.wfs_by_raster"><a class="viewcode-back" href="../../../code/eaarl.io.flight.html#eaarl.io.flight.Flight.wfs_by_raster">[docs]</a>    <span class="k">def</span> <span class="nf">wfs_by_raster</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rasters</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">ranges</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Retrieves waveform data for raster numbers</span>
+
+<span class="sd">        Returns DataFrame of waveform data for the given raster number(s). If</span>
+<span class="sd">        start and count are provided, then rasters are returned for the given</span>
+<span class="sd">        range. If ranges is is provided, then it is treated as a sequence of</span>
+<span class="sd">        (start, count) entries. If rasters is provided, it should be a sequence</span>
+<span class="sd">        of raster numbers.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">            rasters : int or sequence of ints or None</span>
+<span class="sd">                Sequence of raster numbers</span>
+<span class="sd">            start : integer or None</span>
+<span class="sd">                Starting raster number</span>
+<span class="sd">            count : integer</span>
+<span class="sd">                Number of rasters to retrieve</span>
+<span class="sd">            ranges : sequence of tuples</span>
+<span class="sd">                Sequence of (start, count) tuples.</span>
+<span class="sd">            progress : tqdm.tqdm or boolean, default True</span>
+<span class="sd">                If True and if tqdm is available for import, then a progressbar</span>
+<span class="sd">                will be displayed during raster reading. Specify False to</span>
+<span class="sd">                disable. You can also specify your own instance of tqdm.tqdm</span>
+<span class="sd">                (or compatible) for customizing output.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">edb</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">EdbNotLoadedError</span><span class="p">(</span><span class="s1">&#39;loading pulses requires edb data&#39;</span><span class="p">)</span>
+
+        <span class="n">rasts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">edb</span><span class="o">.</span><span class="n">get_rasters</span><span class="p">(</span><span class="n">rasters</span><span class="o">=</span><span class="n">rasters</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">count</span><span class="o">=</span><span class="n">count</span><span class="p">,</span>
+                                     <span class="n">ranges</span><span class="o">=</span><span class="n">ranges</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="n">progress</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wfs_extra</span><span class="p">(</span><span class="n">rasts</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Flight.wfs_by_time"><a class="viewcode-back" href="../../../code/eaarl.io.flight.html#eaarl.io.flight.Flight.wfs_by_time">[docs]</a>    <span class="k">def</span> <span class="nf">wfs_by_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ranges</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Retrieve waveform data for given time ranges</span>
+
+<span class="sd">        Returns DataFrame of waveform data for the given time range(s). If</span>
+<span class="sd">        start and stop are provided, then data for rasters are returned such</span>
+<span class="sd">        that start &lt;= raster start time &lt; stop. If ranges is provided, then</span>
+<span class="sd">        each tuple of start, stop are used.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">            start : numeric or None</span>
+<span class="sd">                A start time</span>
+<span class="sd">            stop : numeric or None</span>
+<span class="sd">                A stop time</span>
+<span class="sd">            ranges : sequence or None</span>
+<span class="sd">                Sequence of start and stop tuples.</span>
+<span class="sd">            progress : tqdm.tqdm or boolean, default True</span>
+<span class="sd">                If True and if tqdm is available for import, then a progressbar</span>
+<span class="sd">                will be displayed during raster reading. Specify False to</span>
+<span class="sd">                disable. You can also specify your own instance of tqdm.tqdm</span>
+<span class="sd">                (or compatible) for customizing output.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">edb</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">EdbNotLoadedError</span><span class="p">(</span><span class="s1">&#39;loading pulses requires edb data&#39;</span><span class="p">)</span>
+
+        <span class="n">rasters</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">edb</span><span class="o">.</span><span class="n">get_rasters_by_time</span><span class="p">(</span><span class="n">start</span><span class="o">=</span><span class="n">start</span><span class="p">,</span> <span class="n">stop</span><span class="o">=</span><span class="n">stop</span><span class="p">,</span>
+                                               <span class="n">ranges</span><span class="o">=</span><span class="n">ranges</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="n">progress</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wfs_extra</span><span class="p">(</span><span class="n">rasters</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Flight.times_by_region"><a class="viewcode-back" href="../../../code/eaarl.io.flight.html#eaarl.io.flight.Flight.times_by_region">[docs]</a>    <span class="k">def</span> <span class="nf">times_by_region</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Retrieve time ranges corresponding to a region</span>
+
+<span class="sd">        This determines the time periods where the plane was within the bounds</span>
+<span class="sd">        of the given region.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">            region : shapely.geometry.base.BaseGeometry</span>
+<span class="sd">                Region of interest to retrieve time ranges for, using WGS-84</span>
+<span class="sd">                geographic coordinates</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="kn">import</span> <span class="nn">shapely.geometry</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">gps</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gps</span><span class="o">.</span><span class="n">lon</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">gps</span><span class="o">.</span><span class="n">lat</span>
+            <span class="n">soe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gps</span><span class="o">.</span><span class="n">sod</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">soe_day_start</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">ins</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ins</span><span class="o">.</span><span class="n">lon</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ins</span><span class="o">.</span><span class="n">lat</span>
+            <span class="n">soe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ins</span><span class="o">.</span><span class="n">sod</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">soe_day_start</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">GpsNotLoadedError</span><span class="p">(</span><span class="s1">&#39;time determination requires gps or ins data&#39;</span><span class="p">)</span>
+
+        <span class="n">ranges</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">last</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">lon</span><span class="p">)),</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">soe</span><span class="p">):</span>
+            <span class="n">point</span> <span class="o">=</span> <span class="n">shapely</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">Point</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">region</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span><span class="n">point</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">last</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">ranges</span> <span class="o">=</span> <span class="p">[[</span><span class="n">t</span><span class="p">,</span> <span class="n">t</span><span class="p">]]</span>
+                <span class="k">elif</span> <span class="n">i</span> <span class="o">==</span> <span class="n">last</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">ranges</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">t</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">ranges</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">t</span><span class="p">,</span> <span class="n">t</span><span class="p">])</span>
+                <span class="n">last</span> <span class="o">=</span> <span class="n">i</span>
+
+        <span class="k">return</span> <span class="n">ranges</span></div>
+
+<div class="viewcode-block" id="Flight.wfs_by_region"><a class="viewcode-back" href="../../../code/eaarl.io.flight.html#eaarl.io.flight.Flight.wfs_by_region">[docs]</a>    <span class="k">def</span> <span class="nf">wfs_by_region</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">region</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Retrieve waveform data corresponding to a region</span>
+
+<span class="sd">        This retrieves data for records where the plane was within the given</span>
+<span class="sd">        region. In other words, the data is retrieved based on the plane&#39;s</span>
+<span class="sd">        location instead of the target locations. You may need to expand your</span>
+<span class="sd">        region by a few hundred meters to compensate.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">            region : shapely.geometry.base.BaseGeometry</span>
+<span class="sd">                Region of interest to retrieve pulse data for, using WGS-84</span>
+<span class="sd">                geographic coordinates</span>
+<span class="sd">            progress : tqdm.tqdm or boolean, default True</span>
+<span class="sd">                If True and if tqdm is available for import, then a progressbar</span>
+<span class="sd">                will be displayed during raster reading. Specify False to</span>
+<span class="sd">                disable. You can also specify your own instance of tqdm.tqdm</span>
+<span class="sd">                (or compatible) for customizing output.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">ranges</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">times_by_region</span><span class="p">(</span><span class="n">region</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">wfs_by_time</span><span class="p">(</span><span class="n">ranges</span><span class="o">=</span><span class="n">ranges</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="n">progress</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Flight.asdict"><a class="viewcode-back" href="../../../code/eaarl.io.flight.html#eaarl.io.flight.Flight.asdict">[docs]</a>    <span class="k">def</span> <span class="nf">asdict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">basedir</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Returns the configuration for the flight as a dict</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">            basedir : string or None</span>
+<span class="sd">                If provided, the paths for files will be relative to this</span>
+<span class="sd">                directory.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">conf</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;date&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">date</span><span class="o">.</span><span class="n">isoformat</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">zone</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">conf</span><span class="p">[</span><span class="s1">&#39;zone&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">zone</span>
+        <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;ops&#39;</span><span class="p">,</span> <span class="s1">&#39;ins&#39;</span><span class="p">,</span> <span class="s1">&#39;gps&#39;</span><span class="p">,</span> <span class="s1">&#39;edb&#39;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">field</span> <span class="o">+</span> <span class="s1">&#39;_file&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">[</span><span class="n">field</span> <span class="o">+</span> <span class="s1">&#39;_file&#39;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">basedir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">value</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">relpath</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">basedir</span><span class="p">)</span>
+                <span class="n">conf</span><span class="p">[</span><span class="n">field</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="k">return</span> <span class="n">conf</span></div>
+
+<div class="viewcode-block" id="Flight.save"><a class="viewcode-back" href="../../../code/eaarl.io.flight.html#eaarl.io.flight.Flight.save">[docs]</a>    <span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conf_file</span><span class="p">):</span>
+        <span class="sd">&#39;&#39;&#39;Saves the configuration for the flight to a file&#39;&#39;&#39;</span>
+        <span class="n">conf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">asdict</span><span class="p">()</span>
+        <span class="n">base</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">conf_file</span><span class="p">)</span>
+        <span class="n">conf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">asdict</span><span class="p">(</span><span class="n">base</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">conf_file</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">conf</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">sort_keys</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      
+      
+      
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

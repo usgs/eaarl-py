@@ -1,0 +1,212 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>eaarl.io.ins &#8212; eaarl-py 0.1.0 documentation</title>
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for eaarl.io.ins</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1"># vim: set fileencoding=utf-8 :</span>
+<span class="sd">&#39;&#39;&#39;Handling for ins trajectory file&#39;&#39;&#39;</span>
+
+<span class="c1"># Boilerplate for cross-compatibility of Python 2/3</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">unicode_literals</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">absolute_import</span>
+<span class="kn">from</span> <span class="nn">future.builtins</span> <span class="k">import</span> <span class="o">*</span> <span class="c1"># pylint: disable=wildcard-import</span>
+<span class="kn">import</span> <span class="nn">future.standard_library</span>
+<span class="n">future</span><span class="o">.</span><span class="n">standard_library</span><span class="o">.</span><span class="n">install_aliases</span><span class="p">()</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">tables</span>
+
+<span class="kn">from</span> <span class="nn">..util.utm</span> <span class="k">import</span> <span class="n">from_latlon</span>
+
+<div class="viewcode-block" id="read"><a class="viewcode-back" href="../../../code/eaarl.io.ins.html#eaarl.io.ins.read">[docs]</a><span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Read INS data from a given HDF5 file</span>
+
+<span class="sd">    Returns : pandas.DataFrame</span>
+<span class="sd">        Returns a DataFrame with the file&#39;s data.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="k">with</span> <span class="n">tables</span><span class="o">.</span><span class="n">open_file</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">h5data</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">root</span><span class="o">.</span><span class="n">ins</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">h5data</span><span class="p">)</span></div>
+
+<span class="k">def</span> <span class="nf">_unwrap</span><span class="p">(</span><span class="n">degrees</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Updates angles to avoid big jumps</span>
+
+<span class="sd">    For example, [359, 1] becomes [359, 361].&#39;&#39;&#39;</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">unwrap</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">degrees</span><span class="p">)))</span>
+
+<div class="viewcode-block" id="apply_corrections"><a class="viewcode-back" href="../../../code/eaarl.io.ins.html#eaarl.io.ins.apply_corrections">[docs]</a><span class="k">def</span> <span class="nf">apply_corrections</span><span class="p">(</span><span class="n">ins</span><span class="p">,</span> <span class="n">gps_time_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Update INS data with relevant corrections</span>
+
+<span class="sd">    The timestamp in an INS file can originally be in seconds-of-the-week</span>
+<span class="sd">    format. This converts it to seconds-of-the-mission-day format.</span>
+
+<span class="sd">    The heading is also &quot;unwrapped&quot; so the angle values avoid big jumps. For</span>
+<span class="sd">    example, the sequence [359, 1] will become [359, 361]. This speeds up</span>
+<span class="sd">    interpolation.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">        ins : pandas.DataFrame</span>
+<span class="sd">            A DataFrame containing the INS data</span>
+<span class="sd">        gps_time_offset : numeric</span>
+<span class="sd">            GPS time offset to apply to the data to convert it to UTC time.</span>
+
+<span class="sd">    Returns : pandas.DataFrame</span>
+<span class="sd">        Returns the modified ins DataFrame.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">day_start</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">ins</span><span class="o">.</span><span class="n">sod</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="mi">86400</span><span class="p">)</span> <span class="o">*</span> <span class="mi">86400</span>
+    <span class="n">ins</span><span class="p">[</span><span class="s1">&#39;sod&#39;</span><span class="p">]</span> <span class="o">-=</span> <span class="n">day_start</span>
+    <span class="n">ins</span><span class="p">[</span><span class="s1">&#39;sod&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">gps_time_offset</span>
+
+    <span class="n">ins</span><span class="p">[</span><span class="n">ins</span><span class="o">.</span><span class="n">sod</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">][</span><span class="s1">&#39;sod&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">604800</span>
+
+    <span class="n">ins</span><span class="p">[</span><span class="s1">&#39;heading&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_unwrap</span><span class="p">(</span><span class="n">ins</span><span class="o">.</span><span class="n">heading</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ins</span></div>
+
+<div class="viewcode-block" id="add_to_frame"><a class="viewcode-back" href="../../../code/eaarl.io.ins.html#eaarl.io.ins.add_to_frame">[docs]</a><span class="k">def</span> <span class="nf">add_to_frame</span><span class="p">(</span><span class="n">frame</span><span class="p">,</span> <span class="n">sod</span><span class="p">,</span> <span class="n">ins</span><span class="p">,</span> <span class="n">ops</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="s1">&#39;ins_&#39;</span><span class="p">,</span> <span class="n">zone</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sa">r</span><span class="sd">&#39;&#39;&#39;Adds interpolated INS data to a frame</span>
+
+<span class="sd">    Adds the following fields to the given dataframe:</span>
+<span class="sd">        * ins_lon - longitude of GPS antenna in degrees</span>
+<span class="sd">        * ins_lat - latitude of GPS antenna in degrees</span>
+<span class="sd">        * ins_alt - altitude of GPS antenna in meters</span>
+<span class="sd">        * ins_roll - roll of INS in degrees</span>
+<span class="sd">        * ins_pitch - pitch of INS in degrees</span>
+<span class="sd">        * ins_heading - heading of INS in degrees</span>
+<span class="sd">        * ins_east - UTM easting of GPS antenna in meters</span>
+<span class="sd">        * ins_north - UTM northing of GPS antenna in meters</span>
+<span class="sd">        * ins_zone - UTM zone for ins_east and ins_north</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">        frame : pandas.DataFrame</span>
+<span class="sd">            A pandas DataFrame that will have fields added to it</span>
+<span class="sd">        sod : np.array or pandas.Series</span>
+<span class="sd">            Seconds-of-the-day time values that correspond to the records in</span>
+<span class="sd">            the frame</span>
+<span class="sd">        ins : pandas.DataFrame</span>
+<span class="sd">            INS data to interpolate from</span>
+<span class="sd">        ops : dict</span>
+<span class="sd">            The ops data for the flight</span>
+<span class="sd">        prefix : string, default &quot;ins\_&quot;</span>
+<span class="sd">            Allows you to change the prefix used for the added fields.</span>
+<span class="sd">        zone : number or None</span>
+<span class="sd">            Allows you to specify a UTM zone that should be used when deriving</span>
+<span class="sd">            the northing and easting values</span>
+
+<span class="sd">    Returns : pandas.DataFrame</span>
+<span class="sd">        Returns the DataFrame that was passed to it, which now contains added</span>
+<span class="sd">        fields.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">ops</span> <span class="o">=</span> <span class="n">ops</span> <span class="ow">or</span> <span class="p">{}</span>
+
+    <span class="k">def</span> <span class="nf">_interp</span><span class="p">(</span><span class="n">field</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">sod</span><span class="p">,</span> <span class="n">ins</span><span class="o">.</span><span class="n">sod</span><span class="p">,</span> <span class="n">field</span><span class="p">,</span> <span class="n">left</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+
+    <span class="n">fields</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;lon&#39;</span><span class="p">,</span> <span class="s1">&#39;lat&#39;</span><span class="p">,</span> <span class="s1">&#39;alt&#39;</span><span class="p">,</span> <span class="s1">&#39;roll&#39;</span><span class="p">,</span> <span class="s1">&#39;pitch&#39;</span><span class="p">,</span> <span class="s1">&#39;heading&#39;</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">:</span>
+        <span class="n">frame</span><span class="p">[</span><span class="n">prefix</span> <span class="o">+</span> <span class="n">field</span><span class="p">]</span> <span class="o">=</span> <span class="n">_interp</span><span class="p">(</span><span class="n">ins</span><span class="p">[</span><span class="n">field</span><span class="p">])</span>
+
+    <span class="k">if</span> <span class="s1">&#39;dmars_invert&#39;</span> <span class="ow">in</span> <span class="n">ops</span> <span class="ow">and</span> <span class="n">ops</span><span class="p">[</span><span class="s1">&#39;dmars_invert&#39;</span><span class="p">]:</span>
+        <span class="n">frame</span><span class="p">[</span><span class="n">prefix</span> <span class="o">+</span> <span class="s1">&#39;roll&#39;</span><span class="p">]</span> <span class="o">*=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="n">frame</span><span class="p">[</span><span class="n">prefix</span> <span class="o">+</span> <span class="s1">&#39;pitch&#39;</span><span class="p">]</span> <span class="o">*=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="n">frame</span><span class="p">[</span><span class="n">prefix</span> <span class="o">+</span> <span class="s1">&#39;heading&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">180</span>
+
+    <span class="c1"># If any of the requested sod values are outside the bounds of the INS,</span>
+    <span class="c1"># then the corresponding values will be nan. The UTM conversion in</span>
+    <span class="c1"># from_latlon fails if any values are nan, so avoid passing them to it.</span>
+
+    <span class="n">valid</span> <span class="o">=</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">frame</span><span class="p">[</span><span class="n">prefix</span> <span class="o">+</span> <span class="s1">&#39;lon&#39;</span><span class="p">])</span> <span class="o">&amp;</span> <span class="o">~</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">frame</span><span class="p">[</span><span class="n">prefix</span> <span class="o">+</span> <span class="s1">&#39;lat&#39;</span><span class="p">])</span>
+
+    <span class="n">frame</span><span class="p">[</span><span class="n">prefix</span> <span class="o">+</span> <span class="s1">&#39;east&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="n">frame</span><span class="p">[</span><span class="n">prefix</span> <span class="o">+</span> <span class="s1">&#39;north&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="n">frame</span><span class="p">[</span><span class="n">prefix</span> <span class="o">+</span> <span class="s1">&#39;zone&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+    <span class="p">(</span>
+        <span class="n">frame</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">valid</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s1">&#39;east&#39;</span><span class="p">],</span> <span class="n">frame</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">valid</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s1">&#39;north&#39;</span><span class="p">],</span>
+        <span class="n">frame</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="n">valid</span><span class="p">,</span> <span class="n">prefix</span> <span class="o">+</span> <span class="s1">&#39;zone&#39;</span><span class="p">],</span> <span class="n">_</span>
+    <span class="p">)</span> <span class="o">=</span> <span class="n">from_latlon</span><span class="p">(</span><span class="n">frame</span><span class="p">[</span><span class="n">prefix</span> <span class="o">+</span> <span class="s1">&#39;lat&#39;</span><span class="p">][</span><span class="n">valid</span><span class="p">],</span>
+                    <span class="n">frame</span><span class="p">[</span><span class="n">prefix</span> <span class="o">+</span> <span class="s1">&#39;lon&#39;</span><span class="p">][</span><span class="n">valid</span><span class="p">],</span> <span class="n">zone</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">frame</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      
+      
+      
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

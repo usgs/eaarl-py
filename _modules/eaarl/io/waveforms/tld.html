@@ -1,0 +1,232 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>eaarl.io.waveforms.tld &#8212; eaarl-py 0.1.0 documentation</title>
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '0.1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for eaarl.io.waveforms.tld</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1"># vim: set fileencoding=utf-8 :</span>
+<span class="c1"># pylint: disable = no-member</span>
+<span class="sd">&#39;&#39;&#39;Handling for TLD data&#39;&#39;&#39;</span>
+
+<span class="c1"># Boilerplate for cross-compatibility of Python 2/3</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">unicode_literals</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">absolute_import</span>
+<span class="kn">from</span> <span class="nn">future.builtins</span> <span class="k">import</span> <span class="o">*</span> <span class="c1"># pylint: disable=wildcard-import</span>
+<span class="kn">import</span> <span class="nn">future.standard_library</span>
+<span class="n">future</span><span class="o">.</span><span class="n">standard_library</span><span class="o">.</span><span class="n">install_aliases</span><span class="p">()</span>
+
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">struct</span>
+
+<span class="kn">from</span> <span class="nn">._types</span> <span class="k">import</span> <span class="n">TLDRecordHeader</span><span class="p">,</span> <span class="n">TLDRasterHeader</span><span class="p">,</span> <span class="n">TLDPulseHeader</span>
+
+<div class="viewcode-block" id="read"><a class="viewcode-back" href="../../../../code/eaarl.io.waveforms.tld.html#eaarl.io.waveforms.tld.read">[docs]</a><span class="k">def</span> <span class="nf">read</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">count</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Read records from file</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">        f : filehandle</span>
+<span class="sd">            Open readable filehandle</span>
+<span class="sd">        offset : int</span>
+<span class="sd">            Offset into file to start reading at</span>
+<span class="sd">        count : int</span>
+<span class="sd">            Number of records to read</span>
+<span class="sd">        progress : tqdm.tqdm or compatible or None or False</span>
+<span class="sd">            If provided, then progress.update() will be called after each</span>
+<span class="sd">            raster is loaded. This is intended to support display of a progress</span>
+<span class="sd">            bar via tqdm.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="n">offset</span><span class="p">)</span>
+    <span class="n">records</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">count</span><span class="p">):</span>
+        <span class="n">records</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_read_record</span><span class="p">(</span><span class="n">f</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">progress</span><span class="p">:</span>
+            <span class="n">progress</span><span class="o">.</span><span class="n">update</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">records</span></div>
+
+<span class="k">def</span> <span class="nf">_read_record</span><span class="p">(</span><span class="n">f</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Read and return a raster record&#39;&#39;&#39;</span>
+    <span class="n">raw</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">TLDRecordHeader</span><span class="o">.</span><span class="n">_size</span><span class="p">)</span>
+    <span class="n">record_header</span> <span class="o">=</span> <span class="n">TLDRecordHeader</span><span class="o">.</span><span class="n">_unpack</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span><span class="o">.</span><span class="n">_asdict</span><span class="p">()</span>
+    <span class="n">data_length</span> <span class="o">=</span> <span class="n">record_header</span><span class="p">[</span><span class="s1">&#39;record_length&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">TLDRecordHeader</span><span class="o">.</span><span class="n">_size</span>
+    <span class="n">raw</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">data_length</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">record_header</span><span class="p">[</span><span class="s1">&#39;record_type&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">5</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="n">raster</span> <span class="o">=</span> <span class="n">TLDRasterHeader</span><span class="o">.</span><span class="n">_unpack_from</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">_asdict</span><span class="p">()</span>
+    <span class="n">raster</span><span class="p">[</span><span class="s1">&#39;pulse&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">offset</span> <span class="o">=</span> <span class="n">TLDRasterHeader</span><span class="o">.</span><span class="n">_size</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">raster</span><span class="p">[</span><span class="s1">&#39;pulse_count&#39;</span><span class="p">]):</span>
+        <span class="n">pulse</span><span class="p">,</span> <span class="n">offset</span> <span class="o">=</span> <span class="n">_read_pulse</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span>
+        <span class="n">pulse</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">raster</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="n">pulse</span><span class="p">[</span><span class="s1">&#39;time_offset&#39;</span><span class="p">]</span>
+        <span class="k">del</span> <span class="n">pulse</span><span class="p">[</span><span class="s1">&#39;time_offset&#39;</span><span class="p">]</span>
+        <span class="n">raster</span><span class="p">[</span><span class="s1">&#39;pulse&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pulse</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">raster</span>
+
+<span class="k">def</span> <span class="nf">_read_pulse</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">offset</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;read and return a pulse record&#39;&#39;&#39;</span>
+    <span class="n">pulse</span> <span class="o">=</span> <span class="n">TLDPulseHeader</span><span class="o">.</span><span class="n">_unpack_from</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span><span class="o">.</span><span class="n">_asdict</span><span class="p">()</span>
+    <span class="n">offset</span> <span class="o">+=</span> <span class="n">TLDPulseHeader</span><span class="o">.</span><span class="n">_size</span>
+
+    <span class="n">data_length</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="s1">&#39;&lt;H&#39;</span><span class="p">,</span> <span class="n">raw</span><span class="p">,</span> <span class="n">offset</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">offset</span> <span class="o">+=</span> <span class="mi">2</span>
+
+    <span class="n">_read_waveforms</span><span class="p">(</span><span class="n">raw</span><span class="p">[</span><span class="n">offset</span><span class="p">:</span><span class="n">offset</span><span class="o">+</span><span class="n">data_length</span><span class="p">],</span> <span class="n">pulse</span><span class="p">)</span>
+    <span class="n">offset</span> <span class="o">+=</span> <span class="n">data_length</span>
+
+    <span class="k">return</span> <span class="p">(</span><span class="n">pulse</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">_read_waveforms</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">pulse</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Read and return a set of waveforms&#39;&#39;&#39;</span>
+    <span class="n">offset</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="n">length</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="s1">&#39;&lt;B&#39;</span><span class="p">,</span> <span class="n">raw</span><span class="p">,</span> <span class="n">offset</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">offset</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">pulse</span><span class="p">[</span><span class="s1">&#39;tx&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_wf</span><span class="p">(</span><span class="n">raw</span><span class="p">[</span><span class="n">offset</span><span class="p">:</span><span class="n">offset</span><span class="o">+</span><span class="n">length</span><span class="p">])</span>
+    <span class="n">offset</span> <span class="o">+=</span> <span class="n">length</span>
+
+    <span class="n">pulse</span><span class="p">[</span><span class="s1">&#39;rx&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">pulse</span><span class="p">[</span><span class="s1">&#39;waveform_count&#39;</span><span class="p">]):</span>
+        <span class="n">length</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack_from</span><span class="p">(</span><span class="s1">&#39;&lt;H&#39;</span><span class="p">,</span> <span class="n">raw</span><span class="p">,</span> <span class="n">offset</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">offset</span> <span class="o">+=</span> <span class="mi">2</span>
+        <span class="n">pulse</span><span class="p">[</span><span class="s1">&#39;rx&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">_wf</span><span class="p">(</span><span class="n">raw</span><span class="p">[</span><span class="n">offset</span><span class="p">:</span><span class="n">offset</span><span class="o">+</span><span class="n">length</span><span class="p">]))</span>
+        <span class="n">offset</span> <span class="o">+=</span> <span class="n">length</span>
+
+<span class="k">def</span> <span class="nf">_wf</span><span class="p">(</span><span class="n">raw</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Converts a buffer into an integer sequence&#39;&#39;&#39;</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">_</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">bytes</span><span class="p">(</span><span class="n">raw</span><span class="p">)]</span>
+
+<div class="viewcode-block" id="write"><a class="viewcode-back" href="../../../../code/eaarl.io.waveforms.tld.html#eaarl.io.waveforms.tld.write">[docs]</a><span class="k">def</span> <span class="nf">write</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">rasters</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Writes a series of rasters to an open filehandle&#39;&#39;&#39;</span>
+    <span class="k">for</span> <span class="n">raster</span> <span class="ow">in</span> <span class="n">rasters</span><span class="p">:</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">_encode_record</span><span class="p">(</span><span class="n">raster</span><span class="p">))</span></div>
+
+<span class="k">def</span> <span class="nf">_encode_record</span><span class="p">(</span><span class="n">raster</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Encode a raster into a buffer&#39;&#39;&#39;</span>
+    <span class="c1"># Build up a bytestring with the data, then write it</span>
+    <span class="c1"># Can&#39;t write as its generated since the record length comes first</span>
+    <span class="c1"># Avoiding random-access in case f is write-only</span>
+
+    <span class="c1"># Some modifications will be made later, ensure they don&#39;t alter the</span>
+    <span class="c1"># originals</span>
+    <span class="n">raster</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">raster</span><span class="p">)</span>
+
+    <span class="c1"># Allocate the space for the record header, but wait to populate it</span>
+    <span class="n">buffer</span> <span class="o">=</span> <span class="nb">bytearray</span><span class="p">(</span><span class="n">TLDRecordHeader</span><span class="o">.</span><span class="n">_size</span><span class="p">)</span>
+
+    <span class="c1"># Add the raster header</span>
+    <span class="n">raster</span><span class="p">[</span><span class="s1">&#39;pulse_count&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">raster</span><span class="p">[</span><span class="s1">&#39;pulse&#39;</span><span class="p">])</span>
+    <span class="n">buffer</span> <span class="o">+=</span> <span class="n">TLDRasterHeader</span><span class="o">.</span><span class="n">_fromdict</span><span class="p">(</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">raster</span><span class="p">))</span><span class="o">.</span><span class="n">_pack</span><span class="p">()</span>
+
+    <span class="k">for</span> <span class="n">pulse</span> <span class="ow">in</span> <span class="n">raster</span><span class="p">[</span><span class="s1">&#39;pulse&#39;</span><span class="p">]:</span>
+        <span class="n">pulse</span><span class="p">[</span><span class="s1">&#39;time_offset&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pulse</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">raster</span><span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">]</span>
+        <span class="n">buffer</span> <span class="o">+=</span> <span class="n">_encode_pulse</span><span class="p">(</span><span class="n">pulse</span><span class="p">)</span>
+
+    <span class="n">header</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;record_type&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s1">&#39;record_length&#39;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">buffer</span><span class="p">)}</span>
+    <span class="n">TLDRecordHeader</span><span class="o">.</span><span class="n">_fromdict</span><span class="p">(</span><span class="n">header</span><span class="p">)</span><span class="o">.</span><span class="n">_pack_into</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">buffer</span>
+
+<span class="k">def</span> <span class="nf">_encode_pulse</span><span class="p">(</span><span class="n">pulse</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Encode a pulse into a buffer&#39;&#39;&#39;</span>
+    <span class="n">pulse</span><span class="p">[</span><span class="s1">&#39;waveform_count&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">pulse</span><span class="p">[</span><span class="s1">&#39;rx&#39;</span><span class="p">]))</span>
+
+    <span class="n">header</span> <span class="o">=</span> <span class="n">TLDPulseHeader</span><span class="o">.</span><span class="n">_fromdict</span><span class="p">(</span><span class="n">pulse</span><span class="p">)</span><span class="o">.</span><span class="n">_pack</span><span class="p">()</span>
+    <span class="n">waveforms</span> <span class="o">=</span> <span class="n">_encode_waveforms</span><span class="p">(</span><span class="n">pulse</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">header</span> <span class="o">+</span> <span class="n">struct</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="s1">&#39;&lt;H&#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">waveforms</span><span class="p">))</span> <span class="o">+</span> <span class="n">waveforms</span>
+
+<span class="k">def</span> <span class="nf">_encode_waveforms</span><span class="p">(</span><span class="n">pulse</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;Encode a set of waveforms into a buffer&#39;&#39;&#39;</span>
+    <span class="n">buffer</span> <span class="o">=</span> <span class="nb">bytearray</span><span class="p">()</span>
+
+    <span class="n">buffer</span> <span class="o">+=</span> <span class="n">struct</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="s1">&#39;&lt;B&#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">pulse</span><span class="p">[</span><span class="s1">&#39;tx&#39;</span><span class="p">]))</span>
+    <span class="n">buffer</span> <span class="o">+=</span> <span class="nb">bytearray</span><span class="p">(</span><span class="n">pulse</span><span class="p">[</span><span class="s1">&#39;tx&#39;</span><span class="p">])</span>
+
+    <span class="k">for</span> <span class="n">rx</span> <span class="ow">in</span> <span class="n">pulse</span><span class="p">[</span><span class="s1">&#39;rx&#39;</span><span class="p">]:</span>
+        <span class="n">buffer</span> <span class="o">+=</span> <span class="n">struct</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="s1">&#39;&lt;H&#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">rx</span><span class="p">))</span>
+        <span class="n">buffer</span> <span class="o">+=</span> <span class="nb">bytearray</span><span class="p">(</span><span class="n">rx</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">buffer</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      
+      
+      
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
