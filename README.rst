@@ -142,7 +142,7 @@ This software is provided "AS IS."
 .. _USGS: https://www.usgs.gov/
 .. _U.S. Geological Survey (USGS): https://www.usgs.gov/
 .. _United States Department of Interior: https://www.doi.gov/
-.. _official USGS copyright policy: http://www.usgs.gov/visual-id/credit_usgs.html#copyright/
+.. _official USGS copyright policy: http://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits
 .. _Python's download page: https://www.python.org/downloads/
 .. _Installing Python Modules: https://docs.python.org/3.5/install/
 .. _How Installation Works: https://docs.python.org/3.5/install/#how-installation-works
