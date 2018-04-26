@@ -23,8 +23,13 @@ primarily uses the Yorick_ programming language.
 
 The EAARL sensors were operational between 2001 and 2014. This library is part
 of a final effort to make EAARL data acquisitions more accessible to the
-public. The USGS has no plans for further development or support of EAARL or of
-its associated software (including this library).
+public. Related software includes:
+
+- `eaarl-io <https://github.com/usgs/eaarl-io>`_, a C API that provides I/O
+  access to raw data collected by the EAARL lidar systems.
+
+The USGS has no plans for further development or support of EAARL or of its
+associated software (including this library).
 
 
 Features
