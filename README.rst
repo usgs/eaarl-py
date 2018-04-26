@@ -11,6 +11,11 @@ approximate first return point cloud by calculating the centroid of the early
 portion of a waveform. This is suitable for exploring the data and serves as a
 basis from which you might develop your own waveform analysis algorithms.
 
+Full documentation for eaarl-py is available at
+`<https://usgs.github.io/eaarl-py>`_. Alternately, documentation can be
+generated locally using Sphinx_ by running `make html` within the docs
+subdirectory.
+
 Users of this library should be familiar with the contents of USGS Open-File
 Report 2016-1046: `Algorithms used in the Airborne Lidar Processing System
 (ALPS)`_. Production processing of EAARL data was performed using ALPS, which
@@ -66,17 +71,6 @@ For more information regarding installing third-party Python modules, please
 see `Installing Python Modules`_ For a description of how installation works
 including where the module will be installed on your computer platform, please
 see `How Installation Works`_.
-
-
-Documentation
--------------
-
-HTML documentation can be generated using Sphinx_. Navigate into the docs
-subdirectory and run this command::
-
-    $ make html
-
-The documentation will be generated under docs/_build/html.
 
 
 Tests
