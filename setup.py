@@ -9,7 +9,7 @@ requirements = [
 
 setup(
     name='eaarl',
-    version='1.0.0',
+    version='1.0.1',
     description='EAARL processing library',
     packages=find_packages(include=['eaarl.*']),
     package_dir={'eaarl': 'eaarl'},
