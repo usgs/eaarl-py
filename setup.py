@@ -9,13 +9,13 @@ requirements = [
 
 setup(
     name='eaarl',
-    version='0.0.1',
+    version='1.0.0',
     description='EAARL processing library',
     packages=find_packages(include=['eaarl.*']),
     package_dir={'eaarl': 'eaarl'},
     install_requires=requirements,
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'Intended Audience :: Science/Research',
         'License :: CC0 1.0 Universal (CC0 1.0) Public Domain Dedication',

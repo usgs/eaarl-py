@@ -7,7 +7,7 @@
   "releases": [
     {
       "name": "eaarl-py",
-      "version": "0.1.0",
+      "version": "1.0.0",
       "organization": "U.S. Geological Survey",
       "description": "A library that provides a starting place for exploring EAARL-A and EAARL-B data in Python.",
       
@@ -30,17 +30,12 @@
         "email": "gs-g-spcmsc_data_inquiries@usgs.gov",
         "name": "Data Management"
       },
-      "status": "Alpha",
+      "status": "Beta",
       "vcs": "git",
-      "repositoryURL": "https://gitlab.cr.usgs.gov/dnagle/eaarl-py",
+      "repositoryURL": "https://github.com/usgs/eaarl-py",
       "languages": [
-        "c"
-      ],
-      "date": {
-        "created": "2018-01-26",
-        "lastModified": "2018-01-26",
-        "metadataLastUpdated": "2018-01-26"
-      }
+        "python"
+      ]
     }
   ]
 }
