@@ -1,13 +1,16 @@
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
     <title>Working with flights &#8212; eaarl-py 0.1.0 documentation</title>
+    
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
@@ -32,7 +35,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head>
-  <body>
+  <body role="document">
   
 
     <div class="document">
@@ -50,32 +53,32 @@ data that has associated spatial information from the trajectories.</p>
 <p>The first step to working with an EAARL dataset is to create a flight object
 that defines the four component data sources needed:</p>
 <ul class="simple">
-<li>An operational configuration file, or “ops” for short. This file provides
+<li>An operational configuration file, or &#8220;ops&#8221; for short. This file provides
 measurements and calibration values necessary for using the other data
 sources together to derive a projected real-world point location.</li>
 <li>A trajectory containing inertial measurements from an inertial navigation
-system, or “ins” for short. This file actually contains both positional data
+system, or &#8220;ins&#8221; for short. This file actually contains both positional data
 and inertial measurements, both of which are provided at a higher frequency
 than the gps trajectory.</li>
-<li>A trajectory containing positional measurements from a GPS, or “gps” for
+<li>A trajectory containing positional measurements from a GPS, or &#8220;gps&#8221; for
 short. The positional data in the gps trajectory is provided at a lower
 frequency than the ins trajectory, which makes it faster to work with when
 the additional precision is not needed.</li>
-<li>An EAARL index/database file, or “edb” for short. The index allows
+<li>An EAARL index/database file, or &#8220;edb&#8221; for short. The index allows
 random-access retrieval of records from the associated EAARL TLD files, which
 contain the waveform data.</li>
 </ul>
 <p>When loading the data sources, you must always load the ops file first because
 some of the other files depend on values from it during their load processes.</p>
-<p>During creation, the flight’s date must also be provided. If a flight crosses GPS midnight, then use the date the flight started. The date is used for two purposes:</p>
+<p>During creation, the flight&#8217;s date must also be provided. If a flight crosses GPS midnight, then use the date the flight started. The date is used for two purposes:</p>
 <ul class="simple">
 <li>The time offset between UTC and GPS time must be applied, and it varies based
 on date.</li>
-<li>The gps trajectory uses “seconds of the day” timestamps and the ins
-trajectory uses “seconds of the week” timestamps. The date is used to convert
-them into “seconds of the epoch”.</li>
+<li>The gps trajectory uses &#8220;seconds of the day&#8221; timestamps and the ins
+trajectory uses &#8220;seconds of the week&#8221; timestamps. The date is used to convert
+them into &#8220;seconds of the epoch&#8221;.</li>
 </ul>
-<p>The flight object is defined in eaarl.io.flight. Assuming you have a flight’s
+<p>The flight object is defined in eaarl.io.flight. Assuming you have a flight&#8217;s
 data in /data/2014-01-31, you can create a flight object for it like so:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">eaarl.io.flight</span>
 
@@ -240,7 +243,7 @@ between times 1391188200 and 1391188201 as well as rasters between times
 <p>If you have the shapely library installed, you can also retrieve data based on
 a spatial region. Your spatial region should use WGS-84 geographic coordinates.
 Any bounded shapely geometry type is permitted.</p>
-<p>Data will be retrieved for all rasters where the plane’s location was inside
+<p>Data will be retrieved for all rasters where the plane&#8217;s location was inside
 the region during data collection. This does not correspond perfectly to the
 area of data coverage itself, since the lidar coverage extends to the left and
 right of the plane. It may be helpful to expand your region by a few hundred
@@ -311,8 +314,8 @@ longitude and between 29.47 N and 29.48 N latitude:</p>
       
       
       
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
       
       |
       <a href="../_sources/tutorial/flight.rst.txt"

@@ -1,13 +1,16 @@
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
     <title>eaarl.io.waveforms.collection &#8212; eaarl-py 0.1.0 documentation</title>
+    
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
@@ -32,7 +35,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head>
-  <body>
+  <body role="document">
   
 
     <div class="document">
@@ -55,12 +58,12 @@
 <dl class="docutils">
 <dt>Parameters</dt>
 <dd><dl class="first last docutils">
-<dt>edb_file <span class="classifier-delimiter">:</span> <span class="classifier">string or None</span></dt>
-<dd>Path to an EDB file</dd>
-<dt>tld_path <span class="classifier-delimiter">:</span> <span class="classifier">string or None</span></dt>
-<dd>Path to the TLD files</dd>
-<dt>edb_data <span class="classifier-delimiter">:</span> <span class="classifier">sequence of dicts or None</span></dt>
-<dd>Return result from <a class="reference internal" href="eaarl.io.waveforms.edb.html#eaarl.io.waveforms.edb.read" title="eaarl.io.waveforms.edb.read"><code class="xref py py-func docutils literal"><span class="pre">eaarl.io.waveforms.edb.read()</span></code></a>.</dd>
+<dt>edb_file</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">string or None</span><dd>Path to an EDB file</dd>
+<dt>tld_path</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">string or None</span><dd>Path to the TLD files</dd>
+<dt>edb_data</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">sequence of dicts or None</span><dd>Return result from <a class="reference internal" href="eaarl.io.waveforms.edb.html#eaarl.io.waveforms.edb.read" title="eaarl.io.waveforms.edb.read"><code class="xref py py-func docutils literal"><span class="pre">eaarl.io.waveforms.edb.read()</span></code></a>.</dd>
 </dl>
 </dd>
 </dl>
@@ -78,16 +81,16 @@ numbers.</p>
 <dl class="docutils">
 <dt>Parameters</dt>
 <dd><dl class="first last docutils">
-<dt>rasters <span class="classifier-delimiter">:</span> <span class="classifier">integer or sequence of integers or None</span></dt>
-<dd>Mission data for a flight</dd>
-<dt>start <span class="classifier-delimiter">:</span> <span class="classifier">integer or None</span></dt>
-<dd>Starting raster number</dd>
-<dt>count <span class="classifier-delimiter">:</span> <span class="classifier">integer, default 1</span></dt>
-<dd>Number of rasters to retrieve</dd>
-<dt>ranges <span class="classifier-delimiter">:</span> <span class="classifier">sequence of tuples</span></dt>
-<dd>Sequence of (start, count) tuples.</dd>
-<dt>progress <span class="classifier-delimiter">:</span> <span class="classifier">tqdm.tqdm or boolean, default True</span></dt>
-<dd>If True and if tqdm is available for import, then a progressbar
+<dt>rasters</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">integer or sequence of integers or None</span><dd>Mission data for a flight</dd>
+<dt>start</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">integer or None</span><dd>Starting raster number</dd>
+<dt>count</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">integer, default 1</span><dd>Number of rasters to retrieve</dd>
+<dt>ranges</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">sequence of tuples</span><dd>Sequence of (start, count) tuples.</dd>
+<dt>progress</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">tqdm.tqdm or boolean, default True</span><dd>If True and if tqdm is available for import, then a progressbar
 will be displayed during raster reading. Specify False to
 disable. You can also specify your own instance of tqdm.tqdm
 (or compatible) for customizing output.</dd>
@@ -106,14 +109,14 @@ are provided, then records are returned such that start &lt;= raster time
 <dl class="docutils">
 <dt>Parameters</dt>
 <dd><dl class="first last docutils">
-<dt>start <span class="classifier-delimiter">:</span> <span class="classifier">numeric or None</span></dt>
-<dd>A start time</dd>
-<dt>stop <span class="classifier-delimiter">:</span> <span class="classifier">numeric or None</span></dt>
-<dd>A stop time</dd>
-<dt>ranges <span class="classifier-delimiter">:</span> <span class="classifier">sequence of tuples or None</span></dt>
-<dd>Sequence of <em>(start, stop)</em> tuples</dd>
-<dt>progress <span class="classifier-delimiter">:</span> <span class="classifier">tqdm.tqdm or boolean, default True</span></dt>
-<dd>If True and if tqdm is available for import, then a progressbar
+<dt>start</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">numeric or None</span><dd>A start time</dd>
+<dt>stop</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">numeric or None</span><dd>A stop time</dd>
+<dt>ranges</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">sequence of tuples or None</span><dd>Sequence of <em>(start, stop)</em> tuples</dd>
+<dt>progress</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">tqdm.tqdm or boolean, default True</span><dd>If True and if tqdm is available for import, then a progressbar
 will be displayed during raster reading. Specify False to
 disable. You can also specify your own instance of tqdm.tqdm
 (or compatible) for customizing output.</dd>
@@ -132,12 +135,12 @@ ranges is provided, then each tuple of start, stop are used.</p>
 <dl class="docutils">
 <dt>Parameters</dt>
 <dd><dl class="first last docutils">
-<dt>start <span class="classifier-delimiter">:</span> <span class="classifier">numeric or None</span></dt>
-<dd>A start time</dd>
-<dt>stop <span class="classifier-delimiter">:</span> <span class="classifier">numeric or None</span></dt>
-<dd>A stop time</dd>
-<dt>ranges <span class="classifier-delimiter">:</span> <span class="classifier">sequence of tuples or None</span></dt>
-<dd>Sequence of start and stop tuples</dd>
+<dt>start</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">numeric or None</span><dd>A start time</dd>
+<dt>stop</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">numeric or None</span><dd>A stop time</dd>
+<dt>ranges</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">sequence of tuples or None</span><dd>Sequence of start and stop tuples</dd>
 </dl>
 </dd>
 </dl>
@@ -160,8 +163,8 @@ pulse duplicated for each of the channels.</p>
 <dl class="docutils">
 <dt>Parameters</dt>
 <dd><dl class="first last docutils">
-<dt>pulses <span class="classifier-delimiter">:</span> <span class="classifier">sequence of dicts</span></dt>
-<dd>Pulse data</dd>
+<dt>pulses</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">sequence of dicts</span><dd>Pulse data</dd>
 </dl>
 </dd>
 </dl>
@@ -177,8 +180,8 @@ flattens it to combine raster and pulse data for each pulse.</p>
 <dl class="docutils">
 <dt>Parameters</dt>
 <dd><dl class="first last docutils">
-<dt>rasters <span class="classifier-delimiter">:</span> <span class="classifier">sequence of dicts</span></dt>
-<dd>Raster data</dd>
+<dt>rasters</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">sequence of dicts</span><dd>Raster data</dd>
 </dl>
 </dd>
 </dl>
@@ -194,11 +197,11 @@ the same as the first sample value in the waveform.</p>
 <dl class="docutils">
 <dt>Parameters</dt>
 <dd><dl class="first last docutils">
-<dt>rasters <span class="classifier-delimiter">:</span> <span class="classifier">sequence of dicts</span></dt>
-<dd>Sequence of dicts that contain pulse entries, which in turn contain
+<dt>rasters</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">sequence of dicts</span><dd>Sequence of dicts that contain pulse entries, which in turn contain
 tx entries</dd>
-<dt>pos <span class="classifier-delimiter">:</span> <span class="classifier">integer</span></dt>
-<dd>1-based index into the transmit waveforms where cleaning should
+<dt>pos</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">integer</span><dd>1-based index into the transmit waveforms where cleaning should
 start</dd>
 </dl>
 </dd>
@@ -216,8 +219,8 @@ have high values.</p>
 <dl class="docutils">
 <dt>Parameters</dt>
 <dd><dl class="first last docutils">
-<dt>rasters <span class="classifier-delimiter">:</span> <span class="classifier">sequence of dicts</span></dt>
-<dd>Sequence of dicts that contain pulse entries, which in turn contain
+<dt>rasters</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">sequence of dicts</span><dd>Sequence of dicts that contain pulse entries, which in turn contain
 tx and rx entries</dd>
 </dl>
 </dd>
@@ -267,8 +270,8 @@ tx and rx entries</dd>
       
       
       
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
       
       |
       <a href="../_sources/code/eaarl.io.waveforms.collection.rst.txt"

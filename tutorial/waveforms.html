@@ -1,13 +1,16 @@
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
     <title>Working with waveforms &#8212; eaarl-py 0.1.0 documentation</title>
+    
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
@@ -32,7 +35,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head>
-  <body>
+  <body role="document">
   
 
     <div class="document">
@@ -45,8 +48,8 @@
 <p>This page provides an introduction to the contents of waveforms dataframes.
 Please refer to <a class="reference internal" href="flight.html"><span class="doc">Working with flights</span></a> for details on how to load waveform data for a
 flight.</p>
-<p>The documentation below assumes you’ve already loaded waveform data into a
-variable called “frame”.</p>
+<p>The documentation below assumes you&#8217;ve already loaded waveform data into a
+variable called &#8220;frame&#8221;.</p>
 <p>The waveform dataframe contains a large number of columns. Initially, the frame
 will contain 24 columns:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">frame</span><span class="o">.</span><span class="n">columns</span>
@@ -60,7 +63,7 @@ will contain 24 columns:</p>
 </div>
 <p>These fields come from two different sources: the TLD files which contain the
 waveform data and the INS trajectory which contains position and attitude data.
-The INS fields are all prefixed  with “ins” for clarity.</p>
+The INS fields are all prefixed  with &#8220;ins&#8221; for clarity.</p>
 <p>The return waveforms are in the <em>rx</em> field. (The <em>tx</em> field contains transmit
 waveforms.) If you have matplotlib, you can plot the return waveform for an
 individual record (in this case, 116) like so:</p>
@@ -73,7 +76,7 @@ individual record (in this case, 116) like so:</p>
 <img alt="../_images/plot_rx116.png" src="../_images/plot_rx116.png" />
 <p>The range of the sample values is 0 to 255. However, the digitizers pick up a
 level of background energy so the baseline of the waveform will always be
-higher than 0. In this case, it’s at about 36. You might find it helpful to
+higher than 0. In this case, it&#8217;s at about 36. You might find it helpful to
 remove the background energy by removing the value of the first sample, like
 so:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">frame</span><span class="o">.</span><span class="n">rx</span><span class="p">[</span><span class="mi">116</span><span class="p">]</span> <span class="o">-</span> <span class="n">frame</span><span class="o">.</span><span class="n">rx</span><span class="p">[</span><span class="mi">116</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
@@ -134,7 +137,7 @@ manually remove channel 4 which contains noise:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">frame</span> <span class="o">=</span> <span class="n">frame</span><span class="p">[</span><span class="n">frame</span><span class="o">.</span><span class="n">channel</span> <span class="o">!=</span> <span class="mi">4</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>Here’s an example that plots the detected surfaces in matplotlib for a frame
+<p>Here&#8217;s an example that plots the detected surfaces in matplotlib for a frame
 that contains a single raster:</p>
 <div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">mpl_toolkits.mplot3d</span> <span class="k">import</span> <span class="n">Axes3D</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
@@ -199,8 +202,8 @@ vertical search window and a 5m horizontal cell size:</p>
       
       
       
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
       
       |
       <a href="../_sources/tutorial/waveforms.rst.txt"

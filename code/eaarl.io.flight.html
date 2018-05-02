@@ -1,13 +1,16 @@
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
     <title>eaarl.io.flight &#8212; eaarl-py 0.1.0 documentation</title>
+    
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
@@ -32,7 +35,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head>
-  <body>
+  <body role="document">
   
 
     <div class="document">
@@ -46,7 +49,7 @@
 <dl class="data">
 <dt id="eaarl.io.flight.flip_waveforms">
 <code class="descclassname">eaarl.io.flight.</code><code class="descname">flip_waveforms</code><a class="headerlink" href="#eaarl.io.flight.flip_waveforms" title="Permalink to this definition">¶</a></dt>
-<dd><p>Specifies whether waveforms should be “flipped” when loading. EAARL
+<dd><p>Specifies whether waveforms should be &#8220;flipped&#8221; when loading. EAARL
 waveforms are inverted by default. When this setting is True (the default),
 the waveforms are flipped so that they look as one would normally expect.
 Set to False to disable that behavior. Note that other code (such as in
@@ -84,8 +87,8 @@ sensible results.</p>
 <dl class="docutils">
 <dt>Parameters</dt>
 <dd><dl class="first last docutils">
-<dt>basedir <span class="classifier-delimiter">:</span> <span class="classifier">string or None</span></dt>
-<dd>If provided, the paths for files will be relative to this
+<dt>basedir</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">string or None</span><dd>If provided, the paths for files will be relative to this
 directory.</dd>
 </dl>
 </dd>
@@ -143,8 +146,8 @@ of the given region.</p>
 <dl class="docutils">
 <dt>Parameters</dt>
 <dd><dl class="first last docutils">
-<dt>region <span class="classifier-delimiter">:</span> <span class="classifier">shapely.geometry.base.BaseGeometry</span></dt>
-<dd>Region of interest to retrieve time ranges for, using WGS-84
+<dt>region</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">shapely.geometry.base.BaseGeometry</span><dd>Region of interest to retrieve time ranges for, using WGS-84
 geographic coordinates</dd>
 </dl>
 </dd>
@@ -163,16 +166,16 @@ of raster numbers.</p>
 <dl class="docutils">
 <dt>Parameters</dt>
 <dd><dl class="first last docutils">
-<dt>rasters <span class="classifier-delimiter">:</span> <span class="classifier">int or sequence of ints or None</span></dt>
-<dd>Sequence of raster numbers</dd>
-<dt>start <span class="classifier-delimiter">:</span> <span class="classifier">integer or None</span></dt>
-<dd>Starting raster number</dd>
-<dt>count <span class="classifier-delimiter">:</span> <span class="classifier">integer</span></dt>
-<dd>Number of rasters to retrieve</dd>
-<dt>ranges <span class="classifier-delimiter">:</span> <span class="classifier">sequence of tuples</span></dt>
-<dd>Sequence of (start, count) tuples.</dd>
-<dt>progress <span class="classifier-delimiter">:</span> <span class="classifier">tqdm.tqdm or boolean, default True</span></dt>
-<dd>If True and if tqdm is available for import, then a progressbar
+<dt>rasters</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int or sequence of ints or None</span><dd>Sequence of raster numbers</dd>
+<dt>start</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">integer or None</span><dd>Starting raster number</dd>
+<dt>count</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">integer</span><dd>Number of rasters to retrieve</dd>
+<dt>ranges</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">sequence of tuples</span><dd>Sequence of (start, count) tuples.</dd>
+<dt>progress</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">tqdm.tqdm or boolean, default True</span><dd>If True and if tqdm is available for import, then a progressbar
 will be displayed during raster reading. Specify False to
 disable. You can also specify your own instance of tqdm.tqdm
 (or compatible) for customizing output.</dd>
@@ -186,17 +189,17 @@ disable. You can also specify your own instance of tqdm.tqdm
 <code class="descname">wfs_by_region</code><span class="sig-paren">(</span><em>region</em>, <em>progress=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eaarl/io/flight.html#Flight.wfs_by_region"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eaarl.io.flight.Flight.wfs_by_region" title="Permalink to this definition">¶</a></dt>
 <dd><p>Retrieve waveform data corresponding to a region</p>
 <p>This retrieves data for records where the plane was within the given
-region. In other words, the data is retrieved based on the plane’s
+region. In other words, the data is retrieved based on the plane&#8217;s
 location instead of the target locations. You may need to expand your
 region by a few hundred meters to compensate.</p>
 <dl class="docutils">
 <dt>Parameters</dt>
 <dd><dl class="first last docutils">
-<dt>region <span class="classifier-delimiter">:</span> <span class="classifier">shapely.geometry.base.BaseGeometry</span></dt>
-<dd>Region of interest to retrieve pulse data for, using WGS-84
+<dt>region</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">shapely.geometry.base.BaseGeometry</span><dd>Region of interest to retrieve pulse data for, using WGS-84
 geographic coordinates</dd>
-<dt>progress <span class="classifier-delimiter">:</span> <span class="classifier">tqdm.tqdm or boolean, default True</span></dt>
-<dd>If True and if tqdm is available for import, then a progressbar
+<dt>progress</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">tqdm.tqdm or boolean, default True</span><dd>If True and if tqdm is available for import, then a progressbar
 will be displayed during raster reading. Specify False to
 disable. You can also specify your own instance of tqdm.tqdm
 (or compatible) for customizing output.</dd>
@@ -216,14 +219,14 @@ each tuple of start, stop are used.</p>
 <dl class="docutils">
 <dt>Parameters</dt>
 <dd><dl class="first last docutils">
-<dt>start <span class="classifier-delimiter">:</span> <span class="classifier">numeric or None</span></dt>
-<dd>A start time</dd>
-<dt>stop <span class="classifier-delimiter">:</span> <span class="classifier">numeric or None</span></dt>
-<dd>A stop time</dd>
-<dt>ranges <span class="classifier-delimiter">:</span> <span class="classifier">sequence or None</span></dt>
-<dd>Sequence of start and stop tuples.</dd>
-<dt>progress <span class="classifier-delimiter">:</span> <span class="classifier">tqdm.tqdm or boolean, default True</span></dt>
-<dd>If True and if tqdm is available for import, then a progressbar
+<dt>start</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">numeric or None</span><dd>A start time</dd>
+<dt>stop</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">numeric or None</span><dd>A stop time</dd>
+<dt>ranges</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">sequence or None</span><dd>Sequence of start and stop tuples.</dd>
+<dt>progress</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">tqdm.tqdm or boolean, default True</span><dd>If True and if tqdm is available for import, then a progressbar
 will be displayed during raster reading. Specify False to
 disable. You can also specify your own instance of tqdm.tqdm
 (or compatible) for customizing output.</dd>
@@ -249,7 +252,7 @@ disable. You can also specify your own instance of tqdm.tqdm
 <dl class="exception">
 <dt id="eaarl.io.flight.InvalidDateError">
 <em class="property">exception </em><code class="descclassname">eaarl.io.flight.</code><code class="descname">InvalidDateError</code><span class="sig-paren">(</span><em>err</em>, <em>message</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eaarl/io/flight.html#InvalidDateError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eaarl.io.flight.InvalidDateError" title="Permalink to this definition">¶</a></dt>
-<dd><p>Exception raised when the date doesn’t work correctly</p>
+<dd><p>Exception raised when the date doesn&#8217;t work correctly</p>
 <dl class="method">
 <dt id="eaarl.io.flight.InvalidDateError.__init__">
 <code class="descname">__init__</code><span class="sig-paren">(</span><em>err</em>, <em>message</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eaarl/io/flight.html#InvalidDateError.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eaarl.io.flight.InvalidDateError.__init__" title="Permalink to this definition">¶</a></dt>
@@ -276,20 +279,20 @@ disable. You can also specify your own instance of tqdm.tqdm
 <dl class="docutils">
 <dt>Parameters</dt>
 <dd><dl class="first last docutils">
-<dt>date <span class="classifier-delimiter">:</span> <span class="classifier">string</span></dt>
-<dd>The date of the flight</dd>
-<dt>basedir <span class="classifier-delimiter">:</span> <span class="classifier">string or None</span></dt>
-<dd>If provided, then paths are resolved as relative to this path.</dd>
-<dt>ops <span class="classifier-delimiter">:</span> <span class="classifier">string or None</span></dt>
-<dd>Path to the ops configuration file</dd>
-<dt>ins <span class="classifier-delimiter">:</span> <span class="classifier">string or None</span></dt>
-<dd>Path to the ins file</dd>
-<dt>gps <span class="classifier-delimiter">:</span> <span class="classifier">string or None</span></dt>
-<dd>Path to the gps file</dd>
-<dt>edb <span class="classifier-delimiter">:</span> <span class="classifier">string or None</span></dt>
-<dd>Path to the edb file</dd>
-<dt>zone <span class="classifier-delimiter">:</span> <span class="classifier">string or None</span></dt>
-<dd>UTM zone for the data</dd>
+<dt>date</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">string</span><dd>The date of the flight</dd>
+<dt>basedir</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">string or None</span><dd>If provided, then paths are resolved as relative to this path.</dd>
+<dt>ops</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">string or None</span><dd>Path to the ops configuration file</dd>
+<dt>ins</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">string or None</span><dd>Path to the ins file</dd>
+<dt>gps</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">string or None</span><dd>Path to the gps file</dd>
+<dt>edb</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">string or None</span><dd>Path to the edb file</dd>
+<dt>zone</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">string or None</span><dd>UTM zone for the data</dd>
 </dl>
 </dd>
 </dl>
@@ -302,8 +305,8 @@ disable. You can also specify your own instance of tqdm.tqdm
 <dl class="docutils">
 <dt>Parameters</dt>
 <dd><dl class="first last docutils">
-<dt>basedir <span class="classifier-delimiter">:</span> <span class="classifier">string or None</span></dt>
-<dd>If provided, then paths in the configuration will be resolved as
+<dt>basedir</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">string or None</span><dd>If provided, then paths in the configuration will be resolved as
 relative to this path.</dd>
 </dl>
 </dd>
@@ -359,8 +362,8 @@ relative to this path.</dd>
       
       
       
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
       
       |
       <a href="../_sources/code/eaarl.io.flight.rst.txt"

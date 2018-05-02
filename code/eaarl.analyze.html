@@ -1,13 +1,16 @@
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
     <title>eaarl.analyze &#8212; eaarl-py 0.1.0 documentation</title>
+    
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
@@ -32,7 +35,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head>
-  <body>
+  <body role="document">
   
 
     <div class="document">
@@ -56,17 +59,17 @@ coordinates of the target.</p>
 <dl class="docutils">
 <dt>Parameters</dt>
 <dd><dl class="first last docutils">
-<dt>frame <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span></dt>
-<dd>DataFrame with pulse data as returned by <code class="xref py py-func docutils literal"><span class="pre">get_for_region()</span></code>,
+<dt>frame</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span><dd>DataFrame with pulse data as returned by <code class="xref py py-func docutils literal"><span class="pre">get_for_region()</span></code>,
 <code class="xref py py-func docutils literal"><span class="pre">get_by_time()</span></code>, or <code class="xref py py-func docutils literal"><span class="pre">get_by_rasters()</span></code>.</dd>
-<dt>ops <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
-<dd>The ops data, available as flight.ops on an eaarl.io.flight.Flight
+<dt>ops</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">dict</span><dd>The ops data, available as flight.ops on an eaarl.io.flight.Flight
 or by manually loading an ops file as a dict.</dd>
-<dt>prefix <span class="classifier-delimiter">:</span> <span class="classifier">string, default “fs\_”</span></dt>
-<dd>Allows you to change the prefix for the fields added to the
+<dt>prefix</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">string, default &#8220;fs\_&#8221;</span><dd>Allows you to change the prefix for the fields added to the
 dataframe.</dd>
-<dt>limit <span class="classifier-delimiter">:</span> <span class="classifier">integer or None, default 12</span></dt>
-<dd>Limits how many samples of the waveform are used for the centroid
+<dt>limit</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">integer or None, default 12</span><dd>Limits how many samples of the waveform are used for the centroid
 calculation. By default, the first 12 samples are used.</dd>
 </dl>
 </dd>
@@ -83,8 +86,8 @@ mirror on the plane.</p>
 <dl class="docutils">
 <dt>Parameters</dt>
 <dd><dl class="first last docutils">
-<dt>frame <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span></dt>
-<dd>Dataframe with waveform records.</dd>
+<dt>frame</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span><dd>Dataframe with waveform records.</dd>
 </dl>
 </dd>
 </dl>
@@ -99,8 +102,8 @@ If a centroid cannot be calculated, returns -1.</p>
 <dl class="docutils">
 <dt>Parameters</dt>
 <dd><dl class="first last docutils">
-<dt>wf <span class="classifier-delimiter">:</span> <span class="classifier">sequence of numbers</span></dt>
-<dd>Any sequence of numbers suitable as input to np.array, representing
+<dt>wf</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">sequence of numbers</span><dd>Any sequence of numbers suitable as input to np.array, representing
 the sample values for the digitized waveform.</dd>
 </dl>
 </dd>
@@ -114,17 +117,17 @@ the sample values for the digitized waveform.</dd>
 <dl class="docutils">
 <dt>Parameters</dt>
 <dd><dl class="first last docutils">
-<dt>frame <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span></dt>
-<dd>DataFrame to discard records from. Must contain fields thresh_rx
+<dt>frame</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span><dd>DataFrame to discard records from. Must contain fields thresh_rx
 and thresh_tx.</dd>
-<dt>rx <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
-<dd>If True, discard records where thersh_rx == 1.</dd>
-<dt>tx <span class="classifier-delimiter">:</span> <span class="classifier">bool</span></dt>
-<dd>If True, discard records where thersh_tx == 1.</dd>
+<dt>rx</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">bool</span><dd>If True, discard records where thersh_rx == 1.</dd>
+<dt>tx</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">bool</span><dd>If True, discard records where thersh_tx == 1.</dd>
 </dl>
 </dd>
-<dt>Returns <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span></dt>
-<dd>New pandas.DataFrame with kept records.</dd>
+<dt>Returns</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span><dd>New pandas.DataFrame with kept records.</dd>
 </dl>
 </dd></dl>
 
@@ -143,22 +146,22 @@ never used.)</p>
 <dl class="docutils">
 <dt>Parameters</dt>
 <dd><dl class="first last docutils">
-<dt>frame <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span></dt>
-<dd>DataFrame of raster data to extract from. Must contain fields
+<dt>frame</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span><dd>DataFrame of raster data to extract from. Must contain fields
 channel, raster_number, pulse_number, and rx. Must be sorted by
 raster_number, then pulse_number, then channel.</dd>
-<dt>max_saturated <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
-<dd>Maximum number of samples that may be saturated. Default is 5.</dd>
-<dt>max_samples <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
-<dd>Maximum number of samples at the head of the waveform to check.
+<dt>max_saturated</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int</span><dd>Maximum number of samples that may be saturated. Default is 5.</dd>
+<dt>max_samples</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int</span><dd>Maximum number of samples at the head of the waveform to check.
 Defaults to 12.</dd>
-<dt>saturation_value <span class="classifier-delimiter">:</span> <span class="classifier">int</span></dt>
-<dd>Saturation value threshold. If a sample is greater than or equal to
+<dt>saturation_value</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int</span><dd>Saturation value threshold. If a sample is greater than or equal to
 this, it is saturated. Default is 250.</dd>
 </dl>
 </dd>
-<dt>Returns <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span></dt>
-<dd>New pandas.DataFrame with kept records.</dd>
+<dt>Returns</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span><dd>New pandas.DataFrame with kept records.</dd>
 </dl>
 </dd></dl>
 
@@ -205,8 +208,8 @@ this, it is saturated. Default is 250.</dd>
       
       
       
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
       
       |
       <a href="../_sources/code/eaarl.analyze.rst.txt"

@@ -1,13 +1,16 @@
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
     <title>eaarl.io.ins &#8212; eaarl-py 0.1.0 documentation</title>
+    
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
@@ -32,7 +35,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head>
-  <body>
+  <body role="document">
   
 
     <div class="document">
@@ -63,24 +66,24 @@
 </dd>
 <dt>Parameters</dt>
 <dd><dl class="first last docutils">
-<dt>frame <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span></dt>
-<dd>A pandas DataFrame that will have fields added to it</dd>
-<dt>sod <span class="classifier-delimiter">:</span> <span class="classifier">np.array or pandas.Series</span></dt>
-<dd>Seconds-of-the-day time values that correspond to the records in
+<dt>frame</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span><dd>A pandas DataFrame that will have fields added to it</dd>
+<dt>sod</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">np.array or pandas.Series</span><dd>Seconds-of-the-day time values that correspond to the records in
 the frame</dd>
-<dt>ins <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span></dt>
-<dd>INS data to interpolate from</dd>
-<dt>ops <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
-<dd>The ops data for the flight</dd>
-<dt>prefix <span class="classifier-delimiter">:</span> <span class="classifier">string, default “ins\_”</span></dt>
-<dd>Allows you to change the prefix used for the added fields.</dd>
-<dt>zone <span class="classifier-delimiter">:</span> <span class="classifier">number or None</span></dt>
-<dd>Allows you to specify a UTM zone that should be used when deriving
+<dt>ins</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span><dd>INS data to interpolate from</dd>
+<dt>ops</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">dict</span><dd>The ops data for the flight</dd>
+<dt>prefix</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">string, default &#8220;ins\_&#8221;</span><dd>Allows you to change the prefix used for the added fields.</dd>
+<dt>zone</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">number or None</span><dd>Allows you to specify a UTM zone that should be used when deriving
 the northing and easting values</dd>
 </dl>
 </dd>
-<dt>Returns <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span></dt>
-<dd>Returns the DataFrame that was passed to it, which now contains added
+<dt>Returns</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span><dd>Returns the DataFrame that was passed to it, which now contains added
 fields.</dd>
 </dl>
 </dd></dl>
@@ -91,20 +94,20 @@ fields.</dd>
 <dd><p>Update INS data with relevant corrections</p>
 <p>The timestamp in an INS file can originally be in seconds-of-the-week
 format. This converts it to seconds-of-the-mission-day format.</p>
-<p>The heading is also “unwrapped” so the angle values avoid big jumps. For
+<p>The heading is also &#8220;unwrapped&#8221; so the angle values avoid big jumps. For
 example, the sequence [359, 1] will become [359, 361]. This speeds up
 interpolation.</p>
 <dl class="docutils">
 <dt>Parameters</dt>
 <dd><dl class="first last docutils">
-<dt>ins <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span></dt>
-<dd>A DataFrame containing the INS data</dd>
-<dt>gps_time_offset <span class="classifier-delimiter">:</span> <span class="classifier">numeric</span></dt>
-<dd>GPS time offset to apply to the data to convert it to UTC time.</dd>
+<dt>ins</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span><dd>A DataFrame containing the INS data</dd>
+<dt>gps_time_offset</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">numeric</span><dd>GPS time offset to apply to the data to convert it to UTC time.</dd>
 </dl>
 </dd>
-<dt>Returns <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span></dt>
-<dd>Returns the modified ins DataFrame.</dd>
+<dt>Returns</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span><dd>Returns the modified ins DataFrame.</dd>
 </dl>
 </dd></dl>
 
@@ -113,8 +116,8 @@ interpolation.</p>
 <code class="descclassname">eaarl.io.ins.</code><code class="descname">read</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/eaarl/io/ins.html#read"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#eaarl.io.ins.read" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read INS data from a given HDF5 file</p>
 <dl class="docutils">
-<dt>Returns <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span></dt>
-<dd>Returns a DataFrame with the file’s data.</dd>
+<dt>Returns</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span><dd>Returns a DataFrame with the file&#8217;s data.</dd>
 </dl>
 </dd></dl>
 
@@ -161,8 +164,8 @@ interpolation.</p>
       
       
       
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
       
       |
       <a href="../_sources/code/eaarl.io.ins.rst.txt"

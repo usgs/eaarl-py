@@ -1,13 +1,16 @@
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
     <title>eaarl-py &#8212; eaarl-py 0.1.0 documentation</title>
+    
     <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
@@ -32,7 +35,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head>
-  <body>
+  <body role="document">
   
 
     <div class="document">
@@ -50,14 +53,23 @@ processing workflow. The included algorithms are capable of generating an
 approximate first return point cloud by calculating the centroid of the early
 portion of a waveform. This is suitable for exploring the data and serves as a
 basis from which you might develop your own waveform analysis algorithms.</p>
+<p>Full documentation for eaarl-py is available at
+<a class="reference external" href="https://usgs.github.io/eaarl-py">https://usgs.github.io/eaarl-py</a>. Alternately, documentation can be
+generated locally using <a class="reference external" href="http://sphinx-doc.org/">Sphinx</a> by running <cite>make html</cite> within the docs
+subdirectory.</p>
 <p>Users of this library should be familiar with the contents of USGS Open-File
 Report 2016-1046: <a class="reference external" href="https://pubs.er.usgs.gov/publication/ofr20161046">Algorithms used in the Airborne Lidar Processing System
 (ALPS)</a>. Production processing of EAARL data was performed using ALPS, which
 primarily uses the <a class="reference external" href="https://dhmunro.github.io/yorick/">Yorick</a> programming language.</p>
 <p>The EAARL sensors were operational between 2001 and 2014. This library is part
 of a final effort to make EAARL data acquisitions more accessible to the
-public. The USGS has no plans for further development or support of EAARL or of
-its associated software (including this library).</p>
+public. Related software includes:</p>
+<ul class="simple">
+<li><a class="reference external" href="https://github.com/usgs/eaarl-io">eaarl-io</a>, a C API that provides I/O
+access to raw data collected by the EAARL lidar systems.</li>
+</ul>
+<p>The USGS has no plans for further development or support of EAARL or of its
+associated software (including this library).</p>
 <div class="section" id="features">
 <h2>Features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
@@ -101,15 +113,6 @@ see <a class="reference external" href="https://docs.python.org/3.5/install/">In
 including where the module will be installed on your computer platform, please
 see <a class="reference external" href="https://docs.python.org/3.5/install/#how-installation-works">How Installation Works</a>.</p>
 </div>
-<div class="section" id="documentation">
-<h2>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h2>
-<p>HTML documentation can be generated using <a class="reference external" href="http://sphinx-doc.org/">Sphinx</a>. Navigate into the docs
-subdirectory and run this command:</p>
-<div class="highlight-default"><div class="highlight"><pre><span></span>$ make html
-</pre></div>
-</div>
-<p>The documentation will be generated under docs/_build/html.</p>
-</div>
 <div class="section" id="tests">
 <h2>Tests<a class="headerlink" href="#tests" title="Permalink to this headline">¶</a></h2>
 <p>The library comes with a test suite that can be run using this command:</p>
@@ -122,7 +125,7 @@ subdirectory and run this command:</p>
 <p>This software is licensed under <a class="reference external" href="http://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</a> and is in the <a class="reference external" href="https://en.wikipedia.org/wiki/Public_domain">public domain</a>
 because it contains materials that originally came from the <a class="reference external" href="https://www.usgs.gov/">U.S. Geological
 Survey (USGS)</a>, an agency of the <a class="reference external" href="https://www.doi.gov/">United States Department of Interior</a>. For
-more information, see the <a class="reference external" href="http://www.usgs.gov/visual-id/credit_usgs.html#copyright/">official USGS copyright policy</a>.</p>
+more information, see the <a class="reference external" href="http://www.usgs.gov/information-policies-and-instructions/copyrights-and-credits">official USGS copyright policy</a>.</p>
 <a class="reference external image-reference" href="http://creativecommons.org/publicdomain/zero/1.0/"><img alt="Creative Commons logo" src="http://i.creativecommons.org/p/zero/1.0/88x31.png" /></a>
 </div>
 <div class="section" id="disclaimer">
@@ -149,7 +152,7 @@ implied, is made by the USGS or the United States Government as to the accuracy
 and functioning of the program and related program material nor shall the fact
 of distribution constitute any such warranty, and no responsibility is assumed
 by the USGS in connection therewith.</p>
-<p>This software is provided “AS IS.”</p>
+<p>This software is provided &#8220;AS IS.&#8221;</p>
 </div>
 </div>
 
@@ -165,7 +168,6 @@ by the USGS in connection therewith.</p>
 <li><a class="reference internal" href="#features">Features</a></li>
 <li><a class="reference internal" href="#requirements">Requirements</a></li>
 <li><a class="reference internal" href="#installation">Installation</a></li>
-<li><a class="reference internal" href="#documentation">Documentation</a></li>
 <li><a class="reference internal" href="#tests">Tests</a></li>
 <li><a class="reference internal" href="#license">License</a></li>
 <li><a class="reference internal" href="#disclaimer">Disclaimer</a></li>
@@ -206,8 +208,8 @@ by the USGS in connection therewith.</p>
       
       
       
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
       
       |
       <a href="_sources/readme.rst.txt"

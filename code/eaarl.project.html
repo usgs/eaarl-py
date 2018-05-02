@@ -1,13 +1,16 @@
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
 
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
     <title>eaarl.project &#8212; eaarl-py 0.1.0 documentation</title>
+    
     <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../',
@@ -32,7 +35,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
 
   </head>
-  <body>
+  <body role="document">
   
 
     <div class="document">
@@ -52,10 +55,10 @@ mir_z.</p>
 <dl class="docutils">
 <dt>Parameters</dt>
 <dd><dl class="first last docutils">
-<dt>frame <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span></dt>
-<dd>A DataFrame containing the pulse records.</dd>
-<dt>ops <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
-<dd>The ops conf data from the flight</dd>
+<dt>frame</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span><dd>A DataFrame containing the pulse records.</dd>
+<dt>ops</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">dict</span><dd>The ops conf data from the flight</dd>
 </dl>
 </dd>
 </dl>
@@ -70,17 +73,17 @@ prefix prepended if provided.</p>
 <dl class="docutils">
 <dt>Parameters</dt>
 <dd><dl class="first last docutils">
-<dt>frame <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span></dt>
-<dd>A DataFrame containing the pulse records.</dd>
-<dt>ops <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
-<dd>The ops conf data from the flight</dd>
-<dt>r_mt <span class="classifier-delimiter">:</span> <span class="classifier">array-like of float</span></dt>
-<dd>Distance from mirror to target, in meters</dd>
-<dt>coord_prefix <span class="classifier-delimiter">:</span> <span class="classifier">string</span></dt>
-<dd>A prefix to prepend to x, y, and z when adding the target
+<dt>frame</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">pandas.DataFrame</span><dd>A DataFrame containing the pulse records.</dd>
+<dt>ops</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">dict</span><dd>The ops conf data from the flight</dd>
+<dt>r_mt</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">array-like of float</span><dd>Distance from mirror to target, in meters</dd>
+<dt>coord_prefix</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">string</span><dd>A prefix to prepend to x, y, and z when adding the target
 coordinates to the DataFrame. The prefix will have _ added if
 missing. For example, if <code class="docutils literal"><span class="pre">coord_prefix='fs'</span></code>, then the target
-coordinates will be added as ‘fs_x’, ‘fs_y’, and ‘fs_z’.</dd>
+coordinates will be added as &#8216;fs_x&#8217;, &#8216;fs_y&#8217;, and &#8216;fs_z&#8217;.</dd>
 </dl>
 </dd>
 </dl>
@@ -93,21 +96,21 @@ coordinates will be added as ‘fs_x’, ‘fs_y’, and ‘fs_z’.</dd>
 <dl class="docutils">
 <dt>Parameters</dt>
 <dd><dl class="first last docutils">
-<dt>base_range <span class="classifier-delimiter">:</span> <span class="classifier">array-like of integer</span></dt>
-<dd>Nanoseconds from start of transmit waveform to return waveform
+<dt>base_range</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">array-like of integer</span><dd>Nanoseconds from start of transmit waveform to return waveform
 (i.e., frame.range)</dd>
-<dt>tx_pos <span class="classifier-delimiter">:</span> <span class="classifier">array-like of float</span></dt>
-<dd>Position in transmit of center of energy</dd>
-<dt>rx_pos <span class="classifier-delimiter">:</span> <span class="classifier">array-like of float</span></dt>
-<dd>Position in return of target center of energy</dd>
-<dt>channel <span class="classifier-delimiter">:</span> <span class="classifier">array-like of integer</span></dt>
-<dd>Channel of point</dd>
-<dt>ops <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
-<dd>The ops conf data from the flight</dd>
+<dt>tx_pos</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">array-like of float</span><dd>Position in transmit of center of energy</dd>
+<dt>rx_pos</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">array-like of float</span><dd>Position in return of target center of energy</dd>
+<dt>channel</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">array-like of integer</span><dd>Channel of point</dd>
+<dt>ops</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">dict</span><dd>The ops conf data from the flight</dd>
 </dl>
 </dd>
-<dt>Returns <span class="classifier-delimiter">:</span> <span class="classifier">float</span></dt>
-<dd>Distance from mirror to target, in meters.</dd>
+<dt>Returns</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">float</span><dd>Distance from mirror to target, in meters.</dd>
 </dl>
 </dd></dl>
 
@@ -154,8 +157,8 @@ coordinates will be added as ‘fs_x’, ‘fs_y’, and ‘fs_z’.</dd>
       
       
       
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.6.3</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.5.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
       
       |
       <a href="../_sources/code/eaarl.project.rst.txt"
