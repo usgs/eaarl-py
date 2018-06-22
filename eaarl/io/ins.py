@@ -18,14 +18,17 @@ import tables
 from ..util.utm import from_latlon
 
 def read(filename):
-    '''Read INS data from a given HDF5 file
+    '''Read INS data from a given HDF5 or CSV file
 
     Returns : pandas.DataFrame
         Returns a DataFrame with the file's data.
     '''
-    with tables.open_file(filename, 'r') as f:
-        h5data = f.root.ins.read()
-    return pd.DataFrame(h5data)
+    try:
+        with tables.open_file(filename, 'r') as f:
+            h5data = f.root.ins.read()
+        return pd.DataFrame(h5data)
+    except tables.exceptions.HDF5ExtError:
+        return pd.read_csv(filename)
 
 def _unwrap(degrees):
     '''Updates angles to avoid big jumps
