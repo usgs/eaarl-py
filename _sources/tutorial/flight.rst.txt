@@ -49,8 +49,8 @@ data in /data/2014-01-31, you can create a flight object for it like so::
     flight.load_ops('/data/2014-01-31/py/ops/20140131.ops.json')
 
     # Then load the ins, gps, and edb files
-    flight.load_ins('/data/2014-01-31/py/ins/2014-01-31-cmb-ins.ins.h5')
-    flight.load_gps('/data/2014-01-31/py/gps/2014-01-31-cmb-pnav.gps.h5')
+    flight.load_ins('/data/2014-01-31/py/ins/2014-01-31-cmb-ins.csv')
+    flight.load_gps('/data/2014-01-31/py/gps/2014-01-31-cmb-pnav.csv')
     flight.load_edb('/data/2014-01-31/eaarl/2014-01-31.idx')
 
 Once you have flight defined, you can write out a configuration file that lets
